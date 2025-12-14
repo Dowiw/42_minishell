@@ -1,3 +1,6 @@
 # binaries
 *.o
 a.out
+
+# directories
+KB/bash
