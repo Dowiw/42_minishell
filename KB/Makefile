@@ -17,7 +17,7 @@ C_FLAGS = -Wall -Werror -Wextra -g
 SRC_DIR = ./src
 LIBFT = $(SRC_DIR)/libft/libft.a
 
-C_FILES =
+C_FILES = main.c
 
 SRC = $(addprefix $(SRC_DIR)/, $(C_FILES))
 
@@ -32,11 +32,11 @@ $(LIBFT):
 		make -C $(SRC_DIR)/libft/
 
 $(NAME): $(OBJ)
-		@$(CC) $(C_FLAGS) $(OBJ) $(LIBFT) -o $(NAME) $(MLX_FLAGS)
+		@$(CC) $(C_FLAGS) $(OBJ) $(LIBFT) -o $(NAME)
 
 %.o: %.c
 		@echo "Compiling $<..."
-		@$(CC) $(C_FLAGS) -c $< -o $@ -I$(INCLUDES) -I$(MLX_DIR)
+		@$(CC) $(C_FLAGS) -c $< -o $@ -I$(INCLUDES)
 
 clean:
 		@make -C ./src/libft clean
