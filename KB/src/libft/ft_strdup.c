@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Duplicates string s to another string in memory
 char	*ft_strdup(const char *s)

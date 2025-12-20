@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
 //Checks for a printable character: return 0 if not
 int	ft_isprint(int c)
 {

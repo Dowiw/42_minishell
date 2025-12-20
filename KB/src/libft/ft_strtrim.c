@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Trims the beginning and end of str s1 based on characters in str set
 char	*ft_strtrim(char const *s1, char const *set)

@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
 //Checks for an alphabetic character: returns 0 for non-alphabets
 int	ft_isalpha(int c)
 {

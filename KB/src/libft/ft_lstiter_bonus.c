@@ -1,17 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isdigit.c                                       :+:      :+:    :+:   */
+/*   ft_lstiter_bonus.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmonjard <kmonjard@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/12 11:48:21 by kmonjard          #+#    #+#             */
-/*   Updated: 2025/05/12 11:48:22 by kmonjard         ###   ########.fr       */
+/*   Created: 2025/05/25 13:16:26 by kmonjard          #+#    #+#             */
+/*   Updated: 2025/05/25 13:16:27 by kmonjard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-//Checks for a numeric character: return 0 if not
-int	ft_isdigit(int c)
+#include "libft.h"
+
+//Iterates through lst and applies function f to content
+void	ft_lstiter(t_list *lst, void (*f)(void *))
 {
-	return (c >= '0' && c <= '9');
+	t_list	*cursor;
+
+	if (!lst || !f)
+		return ;
+	cursor = lst;
+	while (cursor != NULL)
+	{
+		f(cursor->content);
+		cursor = cursor->next;
+	}
 }

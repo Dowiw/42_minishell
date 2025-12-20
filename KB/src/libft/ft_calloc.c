@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
+#include <stdint.h>
 
 //Allocate nmemb elements of size bytes to 0, should check overflow
 void	*ft_calloc(size_t nmemb, size_t size)

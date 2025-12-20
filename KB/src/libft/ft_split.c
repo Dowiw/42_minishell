@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Helper function that helps count number of strings in s
 static size_t	count_str(char const *s, char c)

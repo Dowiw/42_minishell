@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Applies function (*f) to characters of (*s) and stores results to new (char *)
 char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))

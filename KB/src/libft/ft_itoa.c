@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
-// #include <stdio.h>
+#include <stdlib.h>
 
 //Helper function that counters the number of digits in n
 static size_t	digit_counter(long long nmbr)

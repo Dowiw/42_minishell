@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Concatinates s1 (prefix) to s2 (suffix)
 char	*ft_strjoin(char const *s1, char const *s2)

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Frees lst and deletes content using del, does not free next node
 void	ft_lstdelone(t_list *lst, void (*del)(void *))

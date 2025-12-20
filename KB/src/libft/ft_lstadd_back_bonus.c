@@ -12,22 +12,29 @@
 
 #include "libft.h"
 
-//Add node new to the end of list
+//Adds node new to the end of list
 void	ft_lstadd_back(t_list **lst, t_list *new)
 {
 	t_list	*cursor;
 
+	if (!lst || !new)
+		return ;
+	if (*lst == NULL)
+	{
+		*lst = new;
+		return ;
+	}
 	cursor = *lst;
 	while (cursor->next != NULL)
 		cursor = cursor->next;
 	cursor->next = new;
-	new->next = NULL;
 }
 
 /*
 int main(void)
 {
 	#include <stdio.h>
+	#include <string.h>
 	t_list *node1 = (t_list *)malloc(sizeof(t_list));
 	node1->content = "Hello";
 
@@ -58,6 +65,5 @@ int main(void)
 		printf("List 1 added at end: %s\n", (char *)cursor->content);
 		cursor = cursor->next;
 	}
-	return (0);
 }
 */

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "libft.h"
+#include <stdlib.h>
 
 //Allocates a node with content in it and have next point to NULL
 t_list	*ft_lstnew(void *content)

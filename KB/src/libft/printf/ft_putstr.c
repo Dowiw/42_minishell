@@ -1,17 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isdigit.c                                       :+:      :+:    :+:   */
+/*   ft_putstr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmonjard <kmonjard@student.42berlin.d      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/12 11:48:21 by kmonjard          #+#    #+#             */
-/*   Updated: 2025/05/12 11:48:22 by kmonjard         ###   ########.fr       */
+/*   Created: 2025/07/15 15:41:04 by kmonjard          #+#    #+#             */
+/*   Updated: 2025/07/15 15:41:05 by kmonjard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-//Checks for a numeric character: return 0 if not
-int	ft_isdigit(int c)
+#include "ft_printf.h"
+
+int	ft_putstr(const char *str)
 {
-	return (c >= '0' && c <= '9');
+	int	i;
+
+	i = 0;
+	if (!str)
+	{
+		write(STDOUT_FILENO, "(null)", 6);
+		return (6);
+	}
+	while (str[i] != '\0')
+	{
+		ft_putchar(str[i]);
+		i++;
+	}
+	return (i);
 }

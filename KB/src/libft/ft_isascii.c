@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
 //Checks for an ASCII character: return 0 if not
 int	ft_isascii(int c)
 {

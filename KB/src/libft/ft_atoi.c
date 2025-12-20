@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
 //Converts string to int: checks isspace(3), one + | - sign, then digit
 int	ft_atoi(const char *nptr)
 {

@@ -12,6 +12,7 @@
 
 #include "libft.h"
 
+//Function that returns last node of list
 t_list	*ft_lstlast(t_list *lst)
 {
 	t_list	*cursor;
@@ -19,7 +20,7 @@ t_list	*ft_lstlast(t_list *lst)
 	if (!lst)
 		return (NULL);
 	cursor = lst;
-	while (cursor->next != NULL)
+	while (cursor->next)
 		cursor = cursor->next;
 	return (cursor);
 }
