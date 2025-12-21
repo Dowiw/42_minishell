@@ -1,11 +1,11 @@
 # Tasks
 
 ### Parsing
-- [ ] Read input
+- [X] Read input
   - [ ] Handle signals here maybe
-- [ ] Lexer Parsing
-  - [ ] Get line
-  - [ ] Split line into tokens
+- [X] Lexer
+  - [X] Get line
+  - [X] Split line into tokens
   - [ ] Handle quotes
   - [ ] Handle escape characters
   - [ ] Handle metacharacters
