@@ -6,7 +6,7 @@
 - [X] Lexer
   - [X] Get line
   - [X] Split line into tokens
-  - [ ] Handle quotes
+  - [ ] Handle quotes `'`,`"`
   - [ ] Handle escape characters
   - [ ] Handle metacharacters
 - [ ] Parsing
@@ -41,6 +41,10 @@
 - [ ] `ctrl + D` exits the shell
 - [ ] `ctrl + C` displays a new prompt
 - [ ] `ctrl + \` does nothing
+
+### Extra
+- [ ] Describe functions
+- [ ] Wrap-up `README.md`
 
 ### Notes
 
