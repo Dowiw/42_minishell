@@ -6,17 +6,9 @@
 /**
  *
  */
-void	free_tokens(char **tokens)
+void	free_tokens(t_list *tokens)
 {
-	int	i;
-
-	i = 0;
-	while (tokens[i] != NULL)
-	{
-		free(tokens[i]);
-		i++;
-	}
-	free(tokens);
+	ft_lstclear(&tokens, free);
 }
 
 t_list	*parse_tokens(char *line)
@@ -86,6 +78,18 @@ t_list	*parse_tokens(char *line)
 	return (tokens);
 }
 
+void	print_tokens(t_list *tokens)
+{
+	t_list *cursor;
+
+	cursor = tokens;
+	while (cursor != NULL)
+	{
+		printf("%s\n", (char *)cursor->content);
+		cursor = cursor->next;
+	}
+}
+
 /**
  *
  */
@@ -111,6 +115,7 @@ int main(int argc, char **argv, char **envp)
 			continue;
 		}
 		tokens = parse_tokens(line);
+		print_tokens(tokens);
 		free_tokens(tokens);
 		free(line);
 	}

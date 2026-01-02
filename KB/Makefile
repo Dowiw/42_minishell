@@ -38,9 +38,6 @@ $(NAME): $(OBJ)
 	@echo "Compiling $<..."
 	@$(CC) $(C_FLAGS) -c $< -o $@ -I$(INCLUDES)
 
-test:
-
-
 clean:
 	@make -C ./src/libft clean
 	@echo "Deleting object files in minishell..."
