@@ -1,123 +1,42 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include "libft.h" // contains unistd.h
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: kmonjard <kmonjard@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/12/24 12:09:49 by kmonjard          #+#    #+#             */
+/*   Updated: 2025/12/24 14:09:50 by kmonjard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-/**
- *
- */
-void	free_tokens(t_list *tokens)
-{
-	ft_lstclear(&tokens, free);
-}
-
-t_list	*parse_tokens(char *line)
-{
-	int		i;
-	t_list	*tokens;
-
-	tokens = NULL;
-	i = 0;
-	while (line[i])
-	{
-		while(ft_isspace(line[i]))
-			i++;
-		if (!line[i]) // exit if line is end
-			break;
-
-		// handle quotes
-		if (line[i] == '\'' || line[i] == '"')
-		{
-			char quote = line[i++];
-			int start = i;
-			while (line[i] && line[i] != quote)
-				i++;
-			int len = i - start;
-			char *token = malloc(len + 1);
-			ft_strncpy(token, &line[start], len);
-			token[len] = '\0';
-			ft_lstadd_back(&tokens, ft_lstnew(token));
-			if (line[i] == quote)
-				i++;
-		}
-
-		// handle redirection operators
-		else if ((line[i] == '<' && line[i+1] == '<') || (line[i] == '>' && line[i+1] == '>'))
-		{
-			char *token = malloc(3);
-			token[0] = line[i];
-			token[1] = line[i+1];
-			token[2] = '\0';
-			ft_lstadd_back(&tokens, ft_lstnew(token));
-			i += 2;
-		}
-
-		else if (line[i] == '<' || line[i] == '>')
-		{
-			char *token = malloc(2);
-			token[0] = line[i];
-			token[1] = '\0';
-			ft_lstadd_back(&tokens, ft_lstnew(token));
-			i++;
-		}
-
-		// handle normal cmds
-		else
-		{
-			int start = i;
-			while (line[i] && line[i] != ' ' && line[i] != '\t' &&
-				line[i] != '<' && line[i] != '>' && line[i] != '\'' && line[i] != '"')
-				i++;
-			int len = i - start;
-			char *token = malloc(len + 1);
-			ft_strncpy(token, &line[start], len);
-			token[len] = '\0';
-			ft_lstadd_back(&tokens, ft_lstnew(token));
-		}
-	}
-	return (tokens);
-}
-
-void	print_tokens(t_list *tokens)
-{
-	t_list *cursor;
-
-	cursor = tokens;
-	while (cursor != NULL)
-	{
-		printf("%s\n", (char *)cursor->content);
-		cursor = cursor->next;
-	}
-}
+#include "minishell.h"
 
 /**
  *
  */
 int main(int argc, char **argv, char **envp)
 {
-	char	*prompt;
-	char	*line;
-	t_list	*tokens;
+	char		*input;
+	t_list		*tokens;
+	t_env_vars	*env_copy;
 
-	(void)argc;
-	(void)argv;
-	(void)envp;
-	prompt = "~$ ";
+	initialize(argc, argv, &env_copy, envp);
 	while (1)
 	{
-		write(STDOUT_FILENO, prompt, ft_strlen(prompt));
-		line = get_next_line(STDIN_FILENO);
-		if (!line) // Ctrl + D?
-			break;
-		if (line[0] == '\n') // for an empty line
+		input = parse_input(STDIN_FILENO);
+		if (input == NULL)
+			break ;
+		if (input[0] == '\n') // for an empty input
 		{
-			free(line);
+			free(input);
 			continue;
 		}
-		tokens = parse_tokens(line);
+		tokens = parse_tokens(input);
+		perform_tokens(tokens);
 		print_tokens(tokens);
 		free_tokens(tokens);
-		free(line);
+		free(input);
 	}
 	printf("exit\n");
 	return (0);
