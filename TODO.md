@@ -15,14 +15,14 @@
 
 ### Commands
 - [ ] Built-in commands
-  - [ ] `echo` with `-n`
+  - [x] `echo` with `-n`
     - Remarks: Function expects only tokens after echo.
     ```C
     void ft_echo(char **args);
     ```
 
   - [ ] `cd` only with a relative or absolute path
-  - [ ] `pwd`
+  - [x] `pwd`
   - [ ] `export`
   - [ ] `unset`
   - [ ] `env`
