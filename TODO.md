@@ -2,15 +2,16 @@
 
 ### Parsing
 - [X] Read input
-  - [ ] Handle signals here maybe
+  - [X] Handle signals here maybe
 - [X] Lexer
   - [X] Get line
   - [X] Split line into tokens
-  - [ ] Handle quotes `'`,`"`
+  - [X] Handle quotes `'`,`"`
+    - Remarks: [ ] Still have to add quote listening feature I think..
   - [ ] Handle escape characters
   - [ ] Handle metacharacters
-- [ ] Parsing
-  - [ ] Build command structures from tokens
+- [X] Parsing
+  - [X] Build command structures from tokens
   - [ ] Handle Syntax errors
 
 ### Commands
@@ -45,9 +46,9 @@
   - [ ] Handle error for non-existing commands
 
 ### Interactive mode
-- [ ] `ctrl + D` exits the shell
-- [ ] `ctrl + C` displays a new prompt
-- [ ] `ctrl + \` does nothing
+- [X] `ctrl + D` exits the shell
+- [X] `ctrl + C` displays a new prompt
+- [X] `ctrl + \` does nothing
 
 ### Extra
 - [ ] Describe functions
@@ -59,6 +60,8 @@
 char *readline(char *)
 ```
 Readline will have leaks when used. No need to fix.
+
+**Team has decided on NO READLINE**
 
 Available functions:
 
