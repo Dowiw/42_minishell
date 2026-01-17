@@ -20,7 +20,7 @@ int	ft_strcmp(const char *s1, const char *s2)
 	return (0);
 }
 
-void ft_echo(char **argv)
+void ft_echo(int argc, char **argv)
 {
 	int no_last_line;
 	int i;
@@ -29,7 +29,7 @@ void ft_echo(char **argv)
 	no_last_line = (argv[1] && ft_strcmp(argv[1], "-n") == 0);
 	i = no_last_line + 1;
 	// Print the arguments
-	while (argv[i])
+	while (i < argc)
 	{
 		ft_printf("%s", argv[i]);
 		if (argv[i + 1])
