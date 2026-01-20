@@ -18,7 +18,7 @@
   - [x] `echo` with `-n`
     - Remarks: Function expects only tokens after echo including echo as argv[0].
     ```C
-    void ft_echo(char **argv);
+    void ft_echo(int argc, char **argv);
     ```
 
   - [x] `cd` only with a relative or absolute path
