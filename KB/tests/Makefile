@@ -1,4 +1,0 @@
-C_FILES:
-	
-
-all:

@@ -10,12 +10,14 @@
     - Remarks: [ ] Still have to add quote listening feature I think..
   - [ ] Handle escape characters
   - [ ] Handle metacharacters
+    - Remarks: Characters like redirects and the heredoc is parsed as a token on a list
 - [X] Parsing
   - [X] Build command structures from tokens
   - [ ] Handle Syntax errors
 
 ### Commands
 - [ ] Built-in commands
+
   - [x] `echo` with `-n`
     - Remarks: Function expects only tokens after echo including echo as argv[0].
     ```C
@@ -23,14 +25,17 @@
     ```
 
   - [x] `cd` only with a relative or absolute path
-  - Remarks: Function expects only tokens after cd including cd as argv[0]. Expects argc to be 1.
+    - Remarks: Function expects only tokens after cd including cd as argv[0]. Expects argc to be 1.
     ```C
     void ft_cd(int argc, char **argv);
     ```
+
   - [x] `pwd`
     ```C
-    void ft_pwd();
+    void ft_pwd(void);
     ```
+    - There is an environment variable called `OLDPWD` hmm...
+
   - [ ] `export`
   - [ ] `unset`
   - [ ] `env`

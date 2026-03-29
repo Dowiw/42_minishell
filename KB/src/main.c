@@ -24,20 +24,18 @@ int main(int argc, char **argv, char **envp)
 	initialize(argc, argv, &env_copy, envp);
 	while (1)
 	{
-		input = parse_input(STDIN_FILENO);
+		input = listen_input(STDIN_FILENO);
 		if (input == NULL)
 			break ;
-		if (input[0] == '\n') // for an empty input
+		if (input[0] == '\n')
 		{
 			free(input);
 			continue;
 		}
 		tokens = parse_tokens(input);
-		perform_tokens(tokens);
-		print_tokens(tokens);
-		free_tokens(tokens);
+		perform_tokens(tokens, env_copy, envp);
+		free_tokens(tokens, env_copy);
 		free(input);
 	}
-	printf("exit\n");
-	return (0);
+	return (g_signal);
 }

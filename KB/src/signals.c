@@ -4,13 +4,13 @@
 volatile sig_atomic_t g_signal = 0;
 
 /**
- *
+ * @brief Ignore CTRL + C
  */
 void	signal_handler(int signo)
 {
 	g_signal = signo;
-	if (signo == SIGINT) // CTRL + C
-		write(1, "\n", 1); // may add ^C
+	if (signo == SIGINT)
+		write(1, "\n", 1);
 }
 
 /**

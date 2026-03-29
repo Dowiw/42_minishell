@@ -16,8 +16,10 @@ void	initialize(int argc, char **argv, t_env_vars **env_copy, char **envp)
 	initialize_env(env_copy, envp);
 }
 
-
-char	*parse_input(int fd)
+/**
+ *
+ */
+char	*listen_input(int fd)
 {
 	char	*input;
 
@@ -26,7 +28,7 @@ char	*parse_input(int fd)
 	if (input == NULL) // CTRL + D
 	{
 		get_next_line(-1);
-		ft_printf("exit\n");
+		ft_putstr_fd("exit\n", STDOUT_FILENO);
 		return (NULL);
 	}
 	return (input);

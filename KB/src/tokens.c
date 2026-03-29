@@ -1,11 +1,21 @@
 #include "minishell.h"
 
 /**
- *
+ * @brief Perform a token until NULL.
+ * Skip over
  */
-void	perform_tokens(t_list *tokens)
+// Pass envp to perform for command execution
+void	perform_tokens(t_list *tokens, t_env_vars *copy, char **envp)
 {
+	char	*curr;
+	t_list	*cursor;
 
+	cursor = tokens;
+	if (cursor != NULL)
+	{
+		curr = (char *)cursor->content;
+		perform(curr, tokens, envp);
+	}
 }
 
 /**
