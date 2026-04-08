@@ -41,7 +41,7 @@ void	setup_signals(void);
 /* parsing.c */
 
 char	*listen_input(int fd);
-void	initialize(int argc, char **argv, t_env_vars *env_copy, char **envp);
+void	initialize(int argc, char **argv, t_env_vars **env_copy, char **envp);
 
 /* tokens.c */
 

@@ -1,22 +1,22 @@
 #include "minishell.h"
 
-/**
- * @brief Perform a token until NULL.
- * Skip over
- */
-// Pass envp to perform for command execution
-void	perform_tokens(t_list *tokens, t_env_vars *copy, char **envp)
-{
-	char	*curr;
-	t_list	*cursor;
+// /**
+//  * @brief Perform a token until NULL.
+//  * Skip over
+//  */
+// // Pass envp to perform for command execution
+// void	perform_tokens(t_list *tokens, t_env_vars *copy, char **envp)
+// {
+// 	char	*curr;
+// 	t_list	*cursor;
 
-	cursor = tokens;
-	if (cursor != NULL)
-	{
-		curr = (char *)cursor->content;
-		perform(curr, tokens, envp);
-	}
-}
+// 	cursor = tokens;
+// 	if (cursor != NULL)
+// 	{
+// 		curr = (char *)cursor->content;
+// 		perform(curr, tokens, envp);
+// 	}
+// }
 
 /**
  *
@@ -92,16 +92,4 @@ t_list	*parse_tokens(char *input)
 		}
 	}
 	return (tokens);
-}
-
-void	print_tokens(t_list *tokens)
-{
-	t_list *cursor;
-
-	cursor = tokens;
-	while (cursor != NULL)
-	{
-		printf("%s\n", (char *)cursor->content);
-		cursor = cursor->next;
-	}
 }

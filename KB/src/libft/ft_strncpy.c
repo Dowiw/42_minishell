@@ -1,7 +1,7 @@
 #include "libft.h"
 
 /**
- *
+ * @brief Copies src to dst from 0 to size
  */
 char	*ft_strncpy(char *dst, const char *src, size_t size)
 {

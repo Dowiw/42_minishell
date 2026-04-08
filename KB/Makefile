@@ -17,7 +17,7 @@ C_FLAGS = -Wall -Werror -Wextra -g
 SRC_DIR = ./src
 LIBFT = $(SRC_DIR)/libft/libft.a
 
-C_FILES = main.c signals.c
+C_FILES = main.c signals.c parsing.c tokens.c
 
 SRC = $(addprefix $(SRC_DIR)/, $(C_FILES))
 
