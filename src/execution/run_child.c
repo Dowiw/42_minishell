@@ -13,7 +13,13 @@
 #include "minishell.h"
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 
+/**
+ * @brief Wrapper for cheking the right APPEND or TRUNC flag
+ */
 static int	check_and_set_flags(t_redir *r, int flags)
 {
 	if (r->type == APPEND)
@@ -23,6 +29,9 @@ static int	check_and_set_flags(t_redir *r, int flags)
 	return (flags);
 }
 
+/**
+ * @brief Applies redirections of the child
+ */
 static void	apply_redirections_child(t_cmd *cmd, t_minishell *data)
 {
 	t_redir	*r;
@@ -80,6 +89,9 @@ static char	*validate_path(char *cmd_name, t_minishell *data)
 	return (path);
 }
 
+/**
+ * @brief Wrapper for inbuilt child functions
+ */
 static int	run_child_inbuilt(t_cmd *cmd, t_minishell *data)
 {
 	int	argc;
@@ -92,7 +104,7 @@ static int	run_child_inbuilt(t_cmd *cmd, t_minishell *data)
 	if (ft_strcmp(cmd->args[0], "pwd") == 0)
 		return (ft_pwd(), 1);
 	if (ft_strcmp(cmd->args[0], "env") == 0)
-		return (ft_env(data->processed_env, argc, cmd->args), 1);
+		return (ft_env(data->processed_env, argc), 1);
 	if (ft_strcmp(cmd->args[0], "export" ) == 0)
 		return (ft_export(data->processed_env, argc, cmd->args), 1);
 	return (0);

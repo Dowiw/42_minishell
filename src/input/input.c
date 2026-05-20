@@ -11,7 +11,11 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
+/**
+ * @brief End of text when CTRL C is pressed
+ */
 static char	*end_of_text(t_minishell *data)
 {
 	write(1, "^C\n", 3);

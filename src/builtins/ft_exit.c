@@ -10,9 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
+/**
+ * @brief Exit
+ */
 void	ft_exit(t_minishell *data_p, int argc, char **argv)
 {
 	int	exit_code;
@@ -22,7 +25,7 @@ void	ft_exit(t_minishell *data_p, int argc, char **argv)
 	if (argc == 1)
 		exit_code = 0;
 	else
-		exit_code = atoi(argv[1]);
+		exit_code = ft_atoi(argv[1]);
 	cleanup_loop(data_p);
 	cleanup_shell(data_p);
 	exit(exit_code);

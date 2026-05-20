@@ -10,12 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
+#include <limits.h>
+#include <stdio.h>
 
 /**
- *changes PWD env variable
-
+ * @brief changes PWD env variable
  */
 static void	change_pwd(t_env *env)
 {
@@ -40,7 +40,7 @@ static void	change_pwd(t_env *env)
 }
 
 /**
- *changes OLDPWD env variable
+ * @brief Changes OLDPWD env variable
  */
 static void	change_oldpwd(t_env *env, char *old_path)
 {
@@ -62,7 +62,7 @@ static void	change_oldpwd(t_env *env, char *old_path)
 }
 
 /**
- *
+ * @brief Change directory without args
  */
 static void	ft_cd_home(t_env *env, char *old_path)
 {
@@ -77,7 +77,7 @@ static void	ft_cd_home(t_env *env, char *old_path)
 }
 
 /**
- *
+ * @brief Change directory
  */
 void	ft_cd(t_env *env, int argc, char **argv)
 {

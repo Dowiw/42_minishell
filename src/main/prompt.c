@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief Initialize the prompt.

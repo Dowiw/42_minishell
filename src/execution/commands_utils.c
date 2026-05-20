@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 
 /**
  * @brief Counts tokens until the next pipe to size the args array safely.
@@ -39,9 +40,11 @@ t_cmd	*init_cmd(t_token *curr_start)
 
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
-		return (NULL);
+		return (perror("shelld0n[1]: malloc in init_cmd: "), NULL);
 	max_args = count_args(curr_start);
 	cmd->args = ft_calloc(max_args + 1, sizeof(char *));
+	if (!cmd->args)
+		return (perror("shelld0n[1]: malloc in init_cmd: "), NULL);
 	return (cmd);
 }
 

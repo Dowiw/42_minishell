@@ -209,7 +209,6 @@ int		get_token_len(char *str);
 
 void	execute(t_cmd *cmds, t_minishell *data);
 t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data);
-void	perform_tokens(t_list *tokens, t_env **copy);
 void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
 
 // commands.c / commands_utils.c
@@ -226,7 +225,7 @@ void	prep_all_heredocs(t_cmd *cmds, t_minishell *data);
 void	unlink_heredocs(t_cmd *cmds);
 int		has_quotes(char *str);
 void	handle_heredoc_backspace(char *buffer, int *i);
-int		manage_heredoc_chars(char *ch, char buffer[4096], int *i);
+int		manage_heredoc_chars(char *ch, char *buffer, int *i);
 char	*expand_heredoc_body(char *str, t_env *env);
 
 // expand.c / metacharacters.c

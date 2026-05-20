@@ -12,8 +12,6 @@
 
 #include "minishell.h"
 
-#include "minishell.h"
-
 /**
  * @brief Prints the standard Bash syntax error.
  */

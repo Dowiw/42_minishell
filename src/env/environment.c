@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * @brief Takes a char ** of values and stitches them together with ':'
@@ -25,6 +27,11 @@ char	*stitch_env_values(char **values)
 	if (!values || !values[0])
 		return (ft_strdup(""));
 	result = ft_strdup(values[0]);
+	if (!result)
+	{
+		perror("shelld0n[1]: malloc in stitch: ");
+		return (NULL);
+	}
 	i = 1;
 	while (values[i])
 	{
@@ -78,7 +85,7 @@ char	**convert_env_to_array(t_env *env_list)
 	}
 	envp = ft_calloc(count + 1, sizeof(char *));
 	if (!envp)
-		return (NULL);
+		return (perror("shelld0n[1]: malloc in convert: "), NULL);
 	curr = env_list;
 	while (curr)
 	{
@@ -116,11 +123,13 @@ void	add_env_var(t_env *copy, char *key, char *value)
 
 	new_node = malloc(sizeof(t_env));
 	if (!new_node)
-		ft_putstr_fd("Error: ", STDERR_FILENO);
+		perror("shelld0n[1]: add_env_var malloc: ");
 	new_node->key = ft_strdup(key);
 	if (!new_node->key)
-		ft_putstr_fd("shelld0n: malloc", STDERR_FILENO);
+		perror("shelld0n[1]: add_env_var malloc: ");
 	new_node->values = ft_split(value, ':');
+	if (!new_node->values)
+		perror("shelld0n[1]: add_env_var malloc: ");
 	new_node->next = NULL;
 	if (copy == NULL)
 	{

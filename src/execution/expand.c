@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief Helper to extract a variable name and fetch its stitched value.

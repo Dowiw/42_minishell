@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <fcntl.h>
+#include <stdlib.h>
 
 /**
  * @brief
@@ -24,7 +26,7 @@ static char	*get_tmp_filename(t_minishell *data)
 
 	pid_str = ft_itoa(getpid());
 	cnt_str = ft_itoa(data->heredoc_count++);
-	base = ft_strjoin(".heredoc_tmp_", pid_str);
+	base = ft_strjoin("/tmp/.heredoc_tmp_", pid_str);
 	free(pid_str);
 	pid_str = ft_strjoin(base, "_");
 	free(base);

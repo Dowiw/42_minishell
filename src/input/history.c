@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief Reset the index to the count every string entry.
@@ -31,9 +32,6 @@ void	reset_history(t_history *history)
  */
 static void	init_new_history(t_history **his, long *c, char **new, char **in)
 {
-	long	count;
-
-	count = *c;
 	if ((*his)->history)
 	{
 		while ((*his)->history[(*c)])

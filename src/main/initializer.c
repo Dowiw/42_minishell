@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief A subtle check if SHLVL or PWD is not found.
@@ -74,6 +75,7 @@ static int	fill_env(t_env **env_copy, char **envp, t_env **cur)
 	if (!(*cur)->values)
 		return (free((*cur)->key), free((*cur)), free_env(*env_copy), 1);
 	(*cur)->next = NULL;
+	return (0);
 }
 
 /**
@@ -91,7 +93,7 @@ static int	initialize_env(t_env **env_copy, char **envp)
 		curr = malloc(sizeof(t_env));
 		if (!curr)
 			return (free_env((*env_copy)), 1);
-		if (!fill_env(env_copy, envp, &curr))
+		if (fill_env(env_copy, envp, &curr))
 			return (1);
 		if ((*env_copy) == NULL)
 			(*env_copy) = curr;

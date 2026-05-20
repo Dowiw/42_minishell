@@ -11,23 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-char	*get_token_name(t_token_type type)
-{
-	if (type == WORD)
-		return ("WORD");
-	if (type == PIPE)
-		return ("PIPE");
-	if (type == REDIR_IN)
-		return ("REDIR_IN (<)");
-	if (type == REDIR_OUT)
-		return ("REDIR_OUT (>)");
-	if (type == HEREDOC)
-		return ("HEREDOC (<<)");
-	if (type == APPEND)
-		return ("APPEND (>>)");
-	return ("UNKNOWN");
-}
+#include <stdlib.h>
 
 /**
  * @brief Main is main.

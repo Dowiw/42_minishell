@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief Appends a token node to the end of the token linked list.

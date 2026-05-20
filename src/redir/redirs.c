@@ -11,9 +11,10 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
- *
+ * @brief Mallocs a redirect node
  */
 t_redir	*new_redir_node(t_token_type type, char *file, int exp)
 {
@@ -30,7 +31,7 @@ t_redir	*new_redir_node(t_token_type type, char *file, int exp)
 }
 
 /**
- *
+ * @brief Adds a redirect node to the back
  */
 void	add_redir_back(t_redir **head, t_redir *new_node)
 {
@@ -50,7 +51,7 @@ void	add_redir_back(t_redir **head, t_redir *new_node)
 }
 
 /**
- *
+ * @brief Frees the redirects
  */
 void	free_redirs(t_redir *head)
 {

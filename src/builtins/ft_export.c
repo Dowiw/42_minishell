@@ -10,12 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <limits.h>
-#include <string.h>
-#include "libft.h"
-#include "get_next_line.h"
 #include "minishell.h"
+#include <stdlib.h>
 
 //returns a malloced string
 //returns NULL on malloc error
@@ -51,6 +47,9 @@ static const char	*get_values_pos(const char *key_value)
 		return (key_value + i + 1);
 }
 
+/**
+ * @brief Prints variables when there are no args
+ */
 static void	print_export(t_env *env)
 {
 	int	i;
@@ -71,12 +70,18 @@ static void	print_export(t_env *env)
 	}
 }
 
+/**
+ * @brief Error wrapper
+ */
 static void	export_error(int errornum, char *key_value)
 {
 	if (errornum == 1)
 		ft_printf("export: `%s': not a valid identifier\n", key_value);
 }
 
+/**
+ * @brief Export
+ */
 void	ft_export(t_env *env, int argc, char **argv)
 {
 	int		i;

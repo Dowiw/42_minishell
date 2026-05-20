@@ -10,9 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
 #include "minishell.h"
 
+/**
+ * @brief Echo
+ */
 void	ft_echo(int argc, char **argv)
 {
 	int	no_last_line;

@@ -12,7 +12,12 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <limits.h>
+#include <stdio.h>
 
+/**
+ * @brief PWD
+ */
 void	ft_pwd(void)
 {
 	char	path[PATH_MAX];

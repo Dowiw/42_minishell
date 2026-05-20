@@ -11,11 +11,15 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdlib.h>
 
 /**
  * @brief Print out err in stdout.
  */
-void	exit_err(char *err)
+void	exit_err(char *err, t_minishell *data)
 {
-	ft_putstr_fd(err, STDERR_FILENO);
+	ft_putstr_fd("shelld0n[1]: ", STDERR_FILENO);
+	perror(err);
+	cleanup_shell(data);
+	exit(EXIT_FAILURE);
 }

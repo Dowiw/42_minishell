@@ -43,6 +43,7 @@ static int	handle_double_ops(char *input, int i, t_token **list)
 		add_token_back(list, new_token(ft_strdup(">>"), APPEND));
 		return (2);
 	}
+	return (0);
 }
 
 /**

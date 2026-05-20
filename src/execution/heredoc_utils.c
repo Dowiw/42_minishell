@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 
 /**
  * @brief Checks if the raw delimiter token contained any quotes.
@@ -37,6 +38,8 @@ char	*strip_quotes_only(char *str)
 	int		old_state;
 
 	res = ft_strdup("");
+	if (!res)
+		return (perror("shelld0n[1]: malloc in strip quotes: "), NULL);
 	q_state = 0;
 	i = 0;
 	while (str[i])
@@ -62,6 +65,8 @@ char	*expand_heredoc_body(char *str, t_env *env)
 	int		i;
 
 	res = ft_strdup("");
+	if (!res)
+		return (perror("shelld0n[1]: malloc in strip quotes: "), NULL);
 	i = 0;
 	while (str[i])
 	{

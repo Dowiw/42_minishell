@@ -12,6 +12,7 @@
 
 #include "libft.h"
 #include "minishell.h"
+#include <stdlib.h>
 
 //will return the start of the list
 //assumes there are more than 1 environment variables
@@ -41,6 +42,9 @@ t_env	*delete_node(t_env *env_start, t_env *node_to_delete)
 	return (env_start);
 }
 
+/**
+ * @brief Unset
+ */
 void	ft_unset(t_env **env_p, int argc, char **argv)
 {
 	int		i;

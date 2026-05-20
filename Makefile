@@ -12,12 +12,12 @@
 
 NAME = minishell
 CC = gcc
-C_FLAGS = -g
+C_FLAGS = -g -Wall -Werror -Wextra
 
 SRC_DIR = ./src
 LIBFT = $(SRC_DIR)/libft/libft.a
 
-C_FILES = tmp/main.c main/prompt.c main/initializer.c env/environment.c \
+C_FILES = main/main.c main/prompt.c main/initializer.c env/environment.c \
 	input/signals.c main/raw_mode.c input/history.c \
 	input/arrows.c input/input.c input/input_utils.c lexer/lexer.c\
 	execution/execute.c execution/run_child.c execution/commands.c \
@@ -27,7 +27,7 @@ C_FILES = tmp/main.c main/prompt.c main/initializer.c env/environment.c \
 	execution/expand.c builtins/ft_echo.c builtins/ft_cd.c builtins/ft_env.c \
 	builtins/ft_exit.c builtins/ft_export.c builtins/ft_pwd.c \
 	builtins/ft_unset.c execution/heredoc.c execution/heredoc_utils.c \
-	redir/redirs.c
+	redir/redirs.c execution/execute_utils.c
 
 SRC = $(addprefix $(SRC_DIR)/, $(C_FILES))
 

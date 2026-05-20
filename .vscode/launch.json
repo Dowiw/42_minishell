@@ -1,58 +1,13 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Debug minishell",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceFolder}/minishell",
-			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
-			"environment": [],
-			"externalConsole": true,
-			// "console": "integratedTerminal",
-			"MIMode": "gdb",
-			"miDebuggerPath": "/usr/bin/gdb",
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				}
-				,
-				{
-					"description": "Follow child process on fork",
-					"text": "set follow-fork-mode child",
-					"ignoreFailures": false
-				}
-			]
-		}
-		,
-		{
-			"name": "Debug minishell (Alex)",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceFolder}/Alex/minishell",
-			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/Alex",
-			"environment": [],
-			"externalConsole": false,
-			// "console": "integratedTerminal",
-			"MIMode": "gdb",
-			"miDebuggerPath": "/usr/bin/gdb",
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				}
-				,
-				{
-					"description": "Follow child process on fork",
-					"text": "set follow-fork-mode child",
-					"ignoreFailures": false
-				}
-			]
-		}
-	]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Minishell: Attach inside WSL",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceFolder}/minishell",
+            "processId": "${command:pickProcess}",
+            "MIMode": "gdb"
+        }
+    ]
 }
