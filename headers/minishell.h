@@ -245,8 +245,6 @@ int		check_syntax(t_token *tokens);
 // redirs.c (handling file streams)
 
 void	handle_pipes(t_cmd *cmd, int *prev_fd, int fd[2]);
-void	infile(t_cmd *cmd, t_minishell *data);
-void	outfile(t_cmd *cmd, t_minishell *data);
 
 /* ========================================================================== */
 /* ENVIRONMENT                                                                */
@@ -284,7 +282,6 @@ void	free_env(t_env *env_list);
 void	free_cmds(t_cmd *cmds);
 void	free_redirs(t_redir *head);
 void	free_str_arrays(char **str);
-void	print_str_array(char **array, char *name);
 
 // error.c
 

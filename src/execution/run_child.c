@@ -107,6 +107,10 @@ static int	run_child_inbuilt(t_cmd *cmd, t_minishell *data)
 		return (ft_env(data->processed_env, argc), 1);
 	if (ft_strcmp(cmd->args[0], "export" ) == 0)
 		return (ft_export(data->processed_env, argc, cmd->args), 1);
+	if (ft_strcmp(cmd->args[0], "cd") == 0)
+		return (ft_cd(data->processed_env, argc, cmd->args), 1);
+	if (ft_strcmp(cmd->args[0], "exit") == 0)
+		return (ft_exit(data, argc, cmd->args), 1);
 	return (0);
 }
 
