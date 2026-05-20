@@ -13,20 +13,27 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-# include <limits.h>
-# include <stdio.h>
-# include <stdlib.h>
+/* ========================================================================== */
+/* INCLUDES                                                                   */
+/* ========================================================================== */
+
 # include <signal.h>
 # include <termios.h>
-# include <fcntl.h>
-# include "libft.h" // contains unistd.h
-# include "ft_printf.h"
-# include "minishell.h"
+# include <sys/types.h>
+# include "libft.h"
+
+/* ========================================================================== */
+/* GLOBALS                                                                    */
+/* ========================================================================== */
 
 extern volatile sig_atomic_t	g_signal;
 
+/* ========================================================================== */
+/* ENUMERATIONS                                                               */
+/* ========================================================================== */
+
 /**
- * @brief Enumarations for the lexographical part of the program
+ * @brief Enumerations for the lexicographical part of the program
  */
 typedef enum e_token_type
 {
@@ -37,6 +44,10 @@ typedef enum e_token_type
 	HEREDOC,
 	APPEND
 }	t_token_type;
+
+/* ========================================================================== */
+/* DATA STRUCTURES                                                            */
+/* ========================================================================== */
 
 /**
  * @brief A linked list for redirections inside the commands.
@@ -75,15 +86,14 @@ typedef struct s_cmd
  * @brief A linked list for the environment variables.
  *
  * @param key the key value of an env variable (any string before the equal sign)
- * @param values the values string after
- * the equal sign split by the ':' delimiter, allocated
+ * @param values the values string after the equal sign split by the ':' delimiter, allocated
  * @param next the next node
  */
 typedef struct s_env
 {
-	char				*key;
-	char				**values;
-	struct s_env		*next;
+	char			*key;
+	char			**values;
+	struct s_env	*next;
 }	t_env;
 
 /**
@@ -99,7 +109,7 @@ typedef struct s_token
 	char			*value;
 	t_token_type	type;
 	struct s_token	*next;
-}				t_token;
+}	t_token;
 
 /**
  * @brief A structure for storing input strings.
@@ -127,7 +137,7 @@ typedef struct s_history
  * @param processed_env an env structure that is dynamic
  * @param pid pid of the current program, set in execution.c
  * @param heredoc_count the number of heredoc files in the current process
- * @param orig_settings termios strucute of the outer terminal
+ * @param orig_settings termios structure of the outer terminal
  */
 typedef struct s_minishell
 {
@@ -141,132 +151,139 @@ typedef struct s_minishell
 	struct termios	orig_settings;
 }	t_minishell;
 
-t_redir	*new_redir_node(t_token_type type, char *file, int exp);
+/* ========================================================================== */
+/* MAIN                                                                       */
+/* ========================================================================== */
+// main.c / initializer.c
 
+void	initialize(int argc, char **argv, char **envp, t_minishell *data);
+
+// prompt.c / raw_mode.c
+
+void	write_prompt(void);
+void	end_of_prompt(t_minishell *data);
+void	init_prompt(t_minishell *data);
+void	enable_raw_mode(t_minishell *data);
+void	disable_raw_mode(t_minishell *data);
+
+/* ========================================================================== */
+/* INPUT                                                                      */
+/* ========================================================================== */
+// input.c / input_utils.c
+
+char	*listen_input(int fd, t_minishell *data);
+int		check_input(char *input);
+
+// history.c
+
+void	reset_history(t_history *history);
+void	append_to_history(char **input, t_history *history);
+
+// arrows.c / write_and_del.c
+
+void	arrow_keys(t_history *history, char **input, long *cursor, long *len);
+char	*delete_char(char *str, long pos);
+char	*insert_char(char *str, char c, long pos);
+void	backspace(char **input, long *cursor, long *input_len);
+void	printable(char **input, char *c, long *cursor, long *input_len);
+
+// signals.c
+
+void	setup_signals(void);
+
+/* ========================================================================== */
+/* LEXER                                                                      */
+/* ========================================================================== */
+// lexer.c / tokens.c
+
+t_token	*lexer(char *input);
+t_list	*parse_tokens(char *input);
+t_token	*new_token(char *value, t_token_type type);
+void	add_token_back(t_token **list, t_token *new_node);
+int		get_token_len(char *str);
+
+/* ========================================================================== */
+/* EXECUTION                                                                  */
+/* ========================================================================== */
+// execute.c / run_child.c
+
+void	execute(t_cmd *cmds, t_minishell *data);
+t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data);
+void	perform_tokens(t_list *tokens, t_env **copy);
+void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
+
+// commands.c / commands_utils.c
+
+t_cmd	*init_cmd(t_token *curr_start);
+void	add_cmd_back(t_cmd **list, t_cmd *new_cmd);
+int		count_args(t_token *curr);
+t_redir	*new_redir_node(t_token_type type, char *file, int exp);
 void	add_redir_back(t_redir **head, t_redir *new_node);
-void	free_redirs(t_redir *head);
-char	*strip_quotes_only(char *str);
-char	*expand_heredoc_body(char *str, t_env *env);
+
+// heredoc.c
+
 void	prep_all_heredocs(t_cmd *cmds, t_minishell *data);
 void	unlink_heredocs(t_cmd *cmds);
 int		has_quotes(char *str);
 void	handle_heredoc_backspace(char *buffer, int *i);
 int		manage_heredoc_chars(char *ch, char buffer[4096], int *i);
-void	append_char(char **res, char c);
+char	*expand_heredoc_body(char *str, t_env *env);
 
-void	handle_expansion(char *str, int *i, char **res, t_env *env);
-
-void	print_str_array(char **array, char *name);
-
-char	*stitch_env_values(char **values);
-int		check_syntax(t_token *tokens);
+// expand.c / metacharacters.c
 
 char	*expansion(char *str, t_env *env);
+void	handle_expansion(char *str, int *i, char **res, t_env *env);
+void	update_quote_state(char c, int *quote_state);
+char	*strip_quotes_only(char *str);
+void	append_char(char **res, char c);
 
-void	modify_variables(t_env **curr);
+// path_resolver.c / check_syntax.c
 
-void	write_prompt(void);
-void	end_of_prompt(t_minishell *data);
+char	*get_cmd_path(char *cmd, t_env *env_p);
+int		check_syntax(t_token *tokens);
 
-void	backspace(char **input, long *cursor, long *input_len);
-void	printable(char **input, char *c, long *cursor, long *input_len);
-
-t_token	*new_token(char *value, t_token_type type);
-void	add_token_back(t_token **list, t_token *new_node);
-int		get_token_len(char *str);
-
-t_cmd	*init_cmd(t_token *curr_start);
-void	add_cmd_back(t_cmd **list, t_cmd *new_cmd);
-
-char	**convert_env_to_array(t_env *env_list);
-t_env	*get_env_node(t_env *list, char *target_key);
-void	cleanup_loop(t_minishell *data);
-void	cleanup_shell(t_minishell *data);
+// redirs.c (handling file streams)
 
 void	handle_pipes(t_cmd *cmd, int *prev_fd, int fd[2]);
 void	infile(t_cmd *cmd, t_minishell *data);
 void	outfile(t_cmd *cmd, t_minishell *data);
 
-void	free_tokens(t_token *tokens);
-void	free_env(t_env *env_list);
-void	free_cmds(t_cmd *cmds);
-void	free_str_arrays(char **str);
+/* ========================================================================== */
+/* ENVIRONMENT                                                                */
+/* ========================================================================== */
+// environment.c
 
-void	add_cmd_back(t_cmd **list, t_cmd *new_cmd);
-t_cmd	*init_cmd(t_token *curr_start);
-int		count_args(t_token *curr);
-
-// commands
-
-char	*get_cmd_path(char *cmd, t_env *env_p);
-
-// input_utils.c
-
-int		check_input(char *input);
-
-/* history.c */
-
-void	reset_history(t_history *history);
-void	append_to_history(char **input, t_history *history);
-
-// src/input
-
-void	arrow_keys(t_history *history, char **input, long *cursor, long *len);
-char	*delete_char(char *str, long pos);
-char	*insert_char(char *str, char c, long pos);
-
-// src/main
-
-void	init_prompt(t_minishell *data);
-
-// lexer.c
-
-t_token	*lexer(char *input);
-void	update_quote_state(char c, int *quote_state);
-
-//run_child.c
-
-void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
-
-// execute.c
-
-void	execute(t_cmd *cmds, t_minishell *data);
-t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data);
-
-/* raw_mode.c */
-
-void	enable_raw_mode(t_minishell *data);
-void	disable_raw_mode(t_minishell *data);
-
-/* environment.c */
-
+char	**convert_env_to_array(t_env *env_list);
+t_env	*get_env_node(t_env *list, char *target_key);
+char	*stitch_env_values(char **values);
+void	modify_variables(t_env **curr);
 void	add_env_var(t_env *copy, char *key, char *value);
 
-/* inbuilts.c */
+/* ========================================================================== */
+/* BUILTINS                                                                   */
+/* ========================================================================== */
+// inbuilts.c
 
 void	ft_echo(int argc, char **argv);
 void	ft_cd(t_env *env, int argc, char **argv);
 void	ft_pwd(void);
 void	ft_export(t_env *env, int argc, char **argv);
 void	ft_unset(t_env **env, int argc, char **argv);
-void	ft_env(t_env *env, int argc, char **argv);
+void	ft_env(t_env *env, int argc);
 void	ft_exit(t_minishell *data_p, int argc, char **argv);
 
-/* execute.c */
+/* ========================================================================== */
+/* UTILS                                                                      */
+/* ========================================================================== */
+// free_shell.c / cleanup.c
 
-void	perform_tokens(t_list *tokens, t_env **copy);
-
-/* signals.c */
-
-void	setup_signals(void);
-
-/* parsing.c */
-
-char	*listen_input(int fd, t_minishell *data);
-void	initialize(int argc, char **argv, char **envp, t_minishell *data);
-
-/* tokens.c */
-
-t_list	*parse_tokens(char *input);
+void	cleanup_loop(t_minishell *data);
+void	cleanup_shell(t_minishell *data);
+void	free_tokens(t_token *tokens);
+void	free_env(t_env *env_list);
+void	free_cmds(t_cmd *cmds);
+void	free_redirs(t_redir *head);
+void	free_str_arrays(char **str);
+void	print_str_array(char **array, char *name);
 
 #endif
