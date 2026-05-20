@@ -34,8 +34,7 @@ int	check_input(char *input)
 	}
 	if (quote_state != 0)
 	{
-		ft_putstr_fd("shelld0n[2]: syntax error: unclosed quotes", 2);
-		g_signal = 2;
+		print_err(2, "unclosed quotes\n", 1);
 		return (1);
 	}
 	return (0);

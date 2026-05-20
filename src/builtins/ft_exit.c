@@ -31,7 +31,7 @@ void	ft_exit(t_minishell *data_p, int argc, char **argv)
 		while (argv[1][i])
 		{
 			if (!ft_isdigit(argv[1][i]))
-				return (exit_err(0, 2, "requires valid number\n", data_p));
+				return (exit_err(0, 2, "numeric argument required\n", data_p));
 			i++;
 		}
 		exit_code = ft_atoi(argv[1]);

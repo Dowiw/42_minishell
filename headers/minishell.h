@@ -86,7 +86,8 @@ typedef struct s_cmd
  * @brief A linked list for the environment variables.
  *
  * @param key the key value of an env variable (any string before the equal sign)
- * @param values the values string after the equal sign split by the ':' delimiter, allocated
+ * @param values the values string after
+ *  the equal sign split by the ':' delimiter, allocated
  * @param next the next node
  */
 typedef struct s_env
@@ -288,5 +289,6 @@ void	print_str_array(char **array, char *name);
 // error.c
 
 void	exit_err(int b_perror, int err_no, char *err, t_minishell *data);
+void	print_err(int err_no, char *err, int b_print);
 
 #endif
