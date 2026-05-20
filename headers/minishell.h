@@ -285,4 +285,8 @@ void	free_redirs(t_redir *head);
 void	free_str_arrays(char **str);
 void	print_str_array(char **array, char *name);
 
+// error.c
+
+void	exit_err(int b_perror, int err_no, char *err, t_minishell *data);
+
 #endif
