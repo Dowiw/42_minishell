@@ -210,6 +210,7 @@ int		get_token_len(char *str);
 
 void	execute(t_cmd *cmds, t_minishell *data);
 t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data);
+int		run_parent_inbuilt(t_cmd *cmd, t_minishell *data);
 void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
 
 // commands.c / commands_utils.c

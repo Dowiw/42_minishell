@@ -1,0 +1,378 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import pty
+import time
+import select
+import subprocess
+import re
+import signal
+
+# ANSI Color escapes for professional reporting
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+SHELL_PATH = "./minishell"
+VALGRIND_CMD = "valgrind --leak-check=full --errors-limit=no --show-leak-kinds=all --track-origins=yes"
+
+class TestGroup:
+    def __init__(self, name):
+        self.name = name
+        self.tests = []
+
+class TestCase:
+    def __init__(self, name, inputs, expected_output, is_raw_interaction=False, verify_files=None):
+        self.name = name
+        self.inputs = inputs
+        self.expected_output = expected_output
+        self.is_raw_interaction = is_raw_interaction
+        self.verify_files = verify_files or []
+
+def run_in_pty(shell_cmd, input_sequence, timeout=0.3):
+    master, slave = pty.openpty()
+    proc = subprocess.Popen(
+        shell_cmd,
+        shell=True,
+        stdin=slave,
+        stdout=slave,
+        stderr=slave,
+        close_fds=True,
+        preexec_fn=os.setsid
+    )
+    os.close(slave)
+
+    output = b""
+    try:
+        # Step 1: Wait for initial prompt shell initialization layout
+        time.sleep(0.2)
+        r, _, _ = select.select([master], [], [], 0.5)
+        if r:
+            output += os.read(master, 4096)
+
+        # Step 2: Feed inputs sequentially and wait for stream flushes
+        for chunk in input_sequence:
+            os.write(master, chunk.encode('utf-8') if isinstance(chunk, str) else chunk)
+
+            # If sending a command execution command, give extra settling time
+            if '\n' in chunk or (isinstance(chunk, bytes) and b'\n' in chunk):
+                time.sleep(0.15)
+            else:
+                time.sleep(0.02)
+
+        # Step 3: Deep read loop to ensure block-buffers match
+        # Reads until no more characters arrive within the quiet window
+        while True:
+            r, _, _ = select.select([master], [], [], timeout)
+            if not r:
+                break
+            data = os.read(master, 4096)
+            if not data:
+                break
+            output += data
+
+    except Exception:
+        pass
+    finally:
+        os.close(master)
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        proc.wait()
+
+    return output.decode('utf-8', errors='ignore')
+
+def clean_terminal_output(raw_output):
+	# Strip terminal color and cursor movement escape sequences
+    clean = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', raw_output)
+    clean = clean.replace('\r\n', '\n').replace('\r', '\n')
+    return clean
+
+def run_test(test, use_valgrind=False):
+    cmd = f"{VALGRIND_CMD} {SHELL_PATH}" if use_valgrind else SHELL_PATH
+    raw_out = run_in_pty(cmd, test.inputs)
+    clean_out = clean_terminal_output(raw_out)
+
+    passed = False
+    if isinstance(test.expected_output, str):
+        passed = test.expected_output in clean_out
+    elif hasattr(test.expected_output, 'search'):
+        passed = test.expected_output.search(clean_out) is not None
+
+    valgrind_ok = True
+    leak_info = ""
+    if use_valgrind:
+        if "definitely lost:" in raw_out:
+            lost_match = re.search(r"definitely lost: ([0-9,]+) bytes", raw_out)
+            if lost_match and lost_match.group(1) != "0":
+                valgrind_ok = False
+                leak_info = f" (Lost {lost_match.group(1)} bytes!)"
+
+    return passed, clean_out, valgrind_ok, leak_info
+
+def build_test_suite():
+    suite = []
+
+    # ==========================================================================
+    # 1. SIMPLE COMMANDS, WHITESPACE, & FORBIDDEN METACHARACTERS (10 Tests)
+    # ==========================================================================
+    g1 = TestGroup("1. Basic Execution & Forbidden Characters (; and \\)")
+    g1.tests.append(TestCase("Absolute path simple command", ["/bin/pwd\n"], os.getcwd()))
+    g1.tests.append(TestCase("Empty command (Enter only)", ["\n"], ""))
+    g1.tests.append(TestCase("Spaces only", ["    \n"], ""))
+    g1.tests.append(TestCase("Leading and trailing spaces", ["   /bin/pwd   \n"], os.getcwd()))
+    g1.tests.append(TestCase("Garbage command (Should not crash)", ["asdfghjkl\n"], re.compile(r'not found|no such file', re.I)))
+    # THE 42 SUBJECT SPECIFIC CHECKS
+    g1.tests.append(TestCase("Semicolons are literal, NOT separators", ["echo a; b\n"], "a; b"))
+    g1.tests.append(TestCase("Backslashes are literal, NOT escapes", ["echo a\\b\n"], "a\\b"))
+    g1.tests.append(TestCase("Unclosed double quotes rejected", ["echo \"unclosed\n"], re.compile(r'error|unclosed|syntax', re.I)))
+    g1.tests.append(TestCase("Unclosed single quotes rejected", ["echo 'unclosed\n"], re.compile(r'error|unclosed|syntax', re.I)))
+    suite.append(g1)
+
+    # ==========================================================================
+    # 2. ARGUMENTS (6 Tests)
+    # ==========================================================================
+    g2 = TestGroup("2. Arguments")
+    g2.tests.append(TestCase("Absolute path with argument", ["/bin/echo hello\n"], "hello"))
+    g2.tests.append(TestCase("Multiple arguments", ["/bin/echo a b c d\n"], "a b c d"))
+    g2.tests.append(TestCase("Lots of spaces between arguments", ["/bin/echo one       two\n"], "one two"))
+    g2.tests.append(TestCase("Command with multiple flags", ["/bin/ls -l -a\n"], "total"))
+    g2.tests.append(TestCase("Command with combined flags", ["/bin/ls -la\n"], "total"))
+    g2.tests.append(TestCase("Invalid argument", ["/bin/ls file_that_does_not_exist\n"], re.compile(r'No such file', re.I)))
+    suite.append(g2)
+
+    # ==========================================================================
+    # 3. ECHO (7 Tests)
+    # ==========================================================================
+    g3 = TestGroup("3. Built-in: echo")
+    g3.tests.append(TestCase("Echo without arguments", ["echo\n"], "\n"))
+    g3.tests.append(TestCase("Echo with single argument", ["echo 42\n"], "42"))
+    g3.tests.append(TestCase("Echo with multiple arguments", ["echo 42 is the answer\n"], "42 is the answer"))
+    g3.tests.append(TestCase("Echo with -n option", ["echo -n nonewline\n"], "nonewline"))
+    g3.tests.append(TestCase("Echo with multiple -n options", ["echo -n -n -n nonewline\n"], "nonewline"))
+    g3.tests.append(TestCase("Echo with -n mixed with spaces", ["echo -n    spaced\n"], "spaced"))
+    g3.tests.append(TestCase("Echo with fake -n (-nhello)", ["echo -nhello\n"], "-nhello"))
+    suite.append(g3)
+
+    # ==========================================================================
+    # 4. EXIT (6 Tests)
+    # ==========================================================================
+    g4 = TestGroup("4. Built-in: exit")
+    g4.tests.append(TestCase("Exit with no arguments", ["exit\n"], ""))
+    g4.tests.append(TestCase("Exit with numeric argument", ["exit 42\n"], ""))
+    g4.tests.append(TestCase("Exit with non-numeric argument", ["exit abc\n"], re.compile(r'numeric argument required', re.I)))
+    g4.tests.append(TestCase("Exit with multiple arguments (Fail)", ["exit 1 2\n"], re.compile(r'too many arguments', re.I)))
+    g4.tests.append(TestCase("Exit with negative number", ["exit -42\n"], ""))
+    g4.tests.append(TestCase("Exit with large number", ["exit 259\n"], ""))
+    suite.append(g4)
+
+    # ==========================================================================
+    # 5. RETURN VALUES ($?) (8 Tests)
+    # ==========================================================================
+    g5 = TestGroup("5. Return Values ($?)")
+    g5.tests.append(TestCase("Success return value", ["echo success\n", "echo $?\n"], "0"))
+    g5.tests.append(TestCase("Failure return value", ["/bin/ls not_real\n", "echo $?\n"], re.compile(r'[1-9]')))
+    g5.tests.append(TestCase("Return value of command not found", ["fake_cmd\n", "echo $?\n"], "127"))
+    g5.tests.append(TestCase("Return value of syntax error", ["|\n", "echo $?\n"], "2"))
+    g5.tests.append(TestCase("Multiple $? in one line", ["/bin/false\n", "echo $? $?\n"], "1 1"))
+    g5.tests.append(TestCase("Math with $?", ["/bin/false\n", "expr $? + $?\n"], "2"))
+    g5.tests.append(TestCase("Return value after piped success", ["echo hi | cat\n", "echo $?\n"], "0"))
+    g5.tests.append(TestCase("Return value of failed pipe", ["fake_cmd | cat\n", "echo $?\n"], "0"))
+    suite.append(g5)
+
+    # ==========================================================================
+    # 6. DOUBLE QUOTES (8 Tests)
+    # ==========================================================================
+    g6 = TestGroup("6. Double Quotes")
+    g6.tests.append(TestCase("Double quotes enclosing spaces", ["echo \"hello      world\"\n"], "hello      world"))
+    g6.tests.append(TestCase("Double quotes enclosing pipe", ["echo \"cat lol.c | cat > lol.c\"\n"], "cat lol.c | cat > lol.c"))
+    g6.tests.append(TestCase("Double quotes with variable expansion", ["echo \"hello $USER\"\n"], f"hello {os.environ.get('USER', '')}"))
+    g6.tests.append(TestCase("Double quotes with empty string", ["echo \"\"\n"], ""))
+    g6.tests.append(TestCase("Double quotes with just space", ["echo \" \"\n"], " "))
+    g6.tests.append(TestCase("Double quotes enclosing redirect symbols", ["echo \"> >> < <<\"\n"], "> >> < <<"))
+    g6.tests.append(TestCase("Multiple double quotes", ["echo \"hi\"\"there\"\n"], "hithere"))
+    g6.tests.append(TestCase("Double quotes enclosing single quotes", ["echo \"'$USER'\"\n"], f"'{os.environ.get('USER', '')}'"))
+    suite.append(g6)
+
+    # ==========================================================================
+    # 7. SINGLE QUOTES (7 Tests)
+    # ==========================================================================
+    g7 = TestGroup("7. Single Quotes")
+    g7.tests.append(TestCase("Single quotes enclosing spaces", ["echo 'hello      world'\n"], "hello      world"))
+    g7.tests.append(TestCase("Single quotes preventing expansion", ["echo '$USER'\n"], "$USER"))
+    g7.tests.append(TestCase("Single quotes enclosing pipe", ["echo 'a | b'\n"], "a | b"))
+    g7.tests.append(TestCase("Single quotes with empty string", ["echo ''\n"], ""))
+    g7.tests.append(TestCase("Single quotes enclosing double quotes", ["echo '\"$USER\"'\n"], "\"$USER\""))
+    g7.tests.append(TestCase("Multiple single quotes", ["echo 'hi''there'\n"], "hithere"))
+    g7.tests.append(TestCase("Single quotes with redirections", ["echo '< > >> <<'\n"], "< > >> <<"))
+    suite.append(g7)
+
+    # ==========================================================================
+    # 8. ENVIRONMENT VARIABLES
+    # ==========================================================================
+    g8 = TestGroup("8. Environment Variables")
+    g8.tests.append(TestCase("Print existing variable", ["echo $USER\n"], os.environ.get("USER", "")))
+    g8.tests.append(TestCase("Print non-existing variable", ["echo $DOES_NOT_EXIST\n"], "\n"))
+    # FIX: Added the missing single quote to the expected python string!
+    g8.tests.append(TestCase("Variable stuck to string", ["echo \"$USER's_laptop\"\n"], f"{os.environ.get('USER', '')}'s_laptop"))
+    g8.tests.append(TestCase("Multiple variables", ["echo $USER $USER\n"], f"{os.environ.get('USER', '')} {os.environ.get('USER', '')}"))
+    g8.tests.append(TestCase("Variable with quotes next to it", ["echo $USER\"test\"\n"], f"{os.environ.get('USER', '')}test"))
+    g8.tests.append(TestCase("Variable as a command", ["export CMD=ls\n", "$CMD\n"], "minishell"))
+    g8.tests.append(TestCase("Expand variable to nothing inside command", ["echo a$NOTHING b\n"], "a b"))
+    suite.append(g8)
+
+    # ==========================================================================
+    # 9. ENV, EXPORT, UNSET
+    # ==========================================================================
+    g9 = TestGroup("9. Built-ins: env, export, unset")
+    g9.tests.append(TestCase("env lists variables", ["env\n"], "USER="))
+    g9.tests.append(TestCase("export lists with declare -x", ["export\n"], "declare -x "))
+    g9.tests.append(TestCase("export creates new variable", ["export NEW_VAR=123\n", "env\n"], "NEW_VAR=123"))
+    g9.tests.append(TestCase("export replaces old variable", ["export OLD_VAR=1\n", "export OLD_VAR=2\n", "echo $OLD_VAR\n"], "2"))
+    g9.tests.append(TestCase("export without value", ["export NO_VAL\n", "export\n"], "NO_VAL"))
+    g9.tests.append(TestCase("export with spaces in string", ["export SP=\"a b\"\n", "echo $SP\n"], "a b"))
+    # FIX: Check unset via echo to avoid terminal keystroke reflection interfering with grep
+    g9.tests.append(TestCase("unset removes variable", ["export TO_DEL=1\n", "unset TO_DEL\n", "echo CHECK_$TO_DEL\n"], "CHECK_"))
+    g9.tests.append(TestCase("unset non-existent variable (no crash)", ["unset FAKE_VAR\n"], ""))
+    g9.tests.append(TestCase("export invalid identifier", ["export 1VAR=hi\n"], re.compile(r'not a valid identifier', re.I)))
+    suite.append(g9)
+
+    # ==========================================================================
+    # 10. CD & PWD (7 Tests)
+    # ==========================================================================
+    g10 = TestGroup("10. Built-ins: cd, pwd")
+    g10.tests.append(TestCase("pwd basic", ["pwd\n"], os.getcwd()))
+    g10.tests.append(TestCase("cd to relative path", ["cd src\n", "pwd\n"], "src"))
+    g10.tests.append(TestCase("cd to absolute path", [f"cd {os.getcwd()}\n", "pwd\n"], os.getcwd()))
+    g10.tests.append(TestCase("cd ..", ["cd ..\n", "pwd\n"], "/"))
+    g10.tests.append(TestCase("cd .", ["cd .\n", "pwd\n"], os.getcwd()))
+    g10.tests.append(TestCase("cd to invalid path", ["cd /does/not/exist\n"], re.compile(r'No such file', re.I)))
+    g10.tests.append(TestCase("cd without arguments (goes home)", ["cd\n", "pwd\n"], os.environ.get("HOME", "")))
+    suite.append(g10)
+
+    # ==========================================================================
+    # 11. RELATIVE & ENVIRONMENT PATHS (6 Tests)
+    # ==========================================================================
+    g11 = TestGroup("11. Paths & $PATH")
+    g11.tests.append(TestCase("Execute via ./", ["./minishell\n", "exit\n"], "shelld0n $>"))
+    g11.tests.append(TestCase("Complex relative path", ["cd src\n", "../minishell\n", "exit\n"], "shelld0n $>"))
+    g11.tests.append(TestCase("Command via $PATH", ["wc Makefile\n"], "Makefile"))
+    g11.tests.append(TestCase("Unset PATH removes command finding", ["export PATH=\"\"\n", "ls\n"], re.compile(r'No such file|not found', re.I)))
+    g11.tests.append(TestCase("Custom PATH order", ["export PATH=/fake:/bin\n", "ls\n"], "minishell"))
+    g11.tests.append(TestCase("Execute directory (Permission denied / Is a dir)", ["./src\n"], re.compile(r'Is a directory|Permission denied', re.I)))
+    suite.append(g11)
+
+    # ==========================================================================
+    # 12. REDIRECTIONS (8 Tests)
+    # ==========================================================================
+    g12 = TestGroup("12. Redirections (<, >, >>)")
+    g12.tests.append(TestCase("Output redirect >", ["echo test > out.txt\n", "cat out.txt\n"], "test", verify_files=["out.txt"]))
+    g12.tests.append(TestCase("Append redirect >>", ["echo 1 > app.txt\n", "echo 2 >> app.txt\n", "cat app.txt\n"], "1\n2", verify_files=["app.txt"]))
+    g12.tests.append(TestCase("Input redirect <", ["echo input > in.txt\n", "cat < in.txt\n"], "input", verify_files=["in.txt"]))
+    g12.tests.append(TestCase("Multiple outputs (Creates all, writes to last)", ["echo a > f1.txt > f2.txt\n", "cat f2.txt\n"], "a", verify_files=["f1.txt", "f2.txt"]))
+    g12.tests.append(TestCase("Redirect to permission denied", ["echo a > /root/test.txt\n"], re.compile(r'Permission denied', re.I)))
+    g12.tests.append(TestCase("Redirect from non-existent file", ["cat < fake.txt\n"], re.compile(r'No such file', re.I)))
+    g12.tests.append(TestCase("Redirection symbol attached to word", ["echo>file1.txt attached\n", "cat file1.txt\n"], "attached", verify_files=["file1.txt"]))
+    g12.tests.append(TestCase("Empty redirection target", ["echo hi > \n"], re.compile(r'syntax error', re.I)))
+    suite.append(g12)
+
+    # ==========================================================================
+    # 13. PIPES (7 Tests)
+    # ==========================================================================
+    g13 = TestGroup("13. Pipes (|)")
+    g13.tests.append(TestCase("Simple pipe", ["echo hi | cat\n"], "hi"))
+    g13.tests.append(TestCase("Multi pipe", ["echo a | cat | cat | cat\n"], "a"))
+    g13.tests.append(TestCase("Wrong command in pipe", ["fake_cmd | cat\n"], re.compile(r'not found', re.I)))
+    g13.tests.append(TestCase("Pipe mixed with output redirect", ["echo a | cat > pipe.txt\n", "cat pipe.txt\n"], "a", verify_files=["pipe.txt"]))
+    g13.tests.append(TestCase("Pipe mixed with input redirect", ["echo a > in.txt\n", "< in.txt cat | grep a\n"], "a", verify_files=["in.txt", "pipe.txt"]))
+    g13.tests.append(TestCase("Builtin inside pipe (should not modify parent)", ["cd src | cat\n", "pwd\n"], os.getcwd()))
+    g13.tests.append(TestCase("cat | cat | ls (Go crazy)", ["cat | cat | ls\n"], "minishell"))
+    suite.append(g13)
+
+    # ==========================================================================
+    # 14. HEREDOCS
+    # ==========================================================================
+    g14 = TestGroup("14. Heredoc (<<)")
+    # FIX: Split inputs into separate strings to trigger the realistic PTY typing delays
+    g14.tests.append(TestCase("Basic heredoc", ["cat << EOF\n", "test\n", "EOF\n"], "test"))
+    g14.tests.append(TestCase("Heredoc with env expansion", ["cat << EOF\n", "$USER\n", "EOF\n"], os.environ.get("USER", "")))
+    g14.tests.append(TestCase("Heredoc with quoted delimiter", ["cat << 'EOF'\n", "$USER\n", "EOF\n"], "$USER"))
+    g14.tests.append(TestCase("Chained heredocs", ["cat << E1 << E2\n", "h1\n", "E1\n", "h2\n", "E2\n"], "h2"))
+    suite.append(g14)
+
+    # ==========================================================================
+    # 15. SIGNALS & RAW MODE (6 Tests)
+    # ==========================================================================
+    g15 = TestGroup("15. Signals (Ctrl-C, Ctrl-D, Ctrl-\\) & Raw Mode")
+    g15.tests.append(TestCase("Ctrl-C in empty prompt", ["\x03", "echo survived\n"], "survived", is_raw_interaction=True))
+    g15.tests.append(TestCase("Ctrl-C with text (Clears buffer)", ["echo wipe_me", "\x03", "echo clean\n"], "clean", is_raw_interaction=True))
+    g15.tests.append(TestCase("Ctrl-D in empty prompt quits", ["\x04"], ""))
+    g15.tests.append(TestCase("Ctrl-D with text (Ignored)", ["echo wait", "\x04", "\n"], "wait", is_raw_interaction=True))
+    g15.tests.append(TestCase("Ctrl-\\ in empty prompt (Ignored)", ["\x1c", "echo alive\n"], "alive", is_raw_interaction=True))
+    g15.tests.append(TestCase("Up Arrow History Retrieval", ["echo mem\n", "\x1b[A", "\n"], "mem", is_raw_interaction=True))
+    suite.append(g15)
+
+    return suite
+
+def cleanup_workspace(files):
+    for f in files:
+        if os.path.exists(f):
+            try:
+                os.remove(f)
+            except Exception:
+                pass
+
+def main():
+    print(f"{CYAN}{BOLD}Compiling shell repository updates...{RESET}")
+    make_proc = subprocess.run("make", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if make_proc.returncode != 0:
+        print(f"{RED}{BOLD}Compilation error intercepted!{RESET}")
+        print(make_proc.stderr.decode())
+        sys.exit(1)
+
+    if not os.path.exists(SHELL_PATH):
+        print(f"{RED}{BOLD}Binary target error: '{SHELL_PATH}' missing.{RESET}")
+        sys.exit(1)
+
+    use_valgrind = "--valgrind" in sys.argv
+    suite = build_test_suite()
+
+    total_passed = 0
+    total_tests = 0
+
+    print(f"\n{BOLD}=== SHELLD0N EXTENDED AUTOMATED COMPLIANCE SUITE ==={RESET}")
+    if use_valgrind:
+        print(f"{YELLOW}Valgrind memory supervisor is active.{RESET}")
+
+    for group in suite:
+        print(f"\n{CYAN}{BOLD}[{group.name}]{RESET}")
+        for test in group.tests:
+            total_tests += 1
+            passed, out, valgrind_ok, leak_info = run_test(test, use_valgrind)
+
+            cleanup_workspace(test.verify_files)
+
+            if passed and valgrind_ok:
+                print(f"  {GREEN}✔{RESET} {test.name}")
+                total_passed += 1
+            else:
+                print(f"  {RED}✘{RESET} {test.name}")
+                if not passed:
+                    print(f"    -> {RED}Output Validation Failed{RESET}")
+                    snippet = out.strip().replace('\n', '\n      ')
+                    print(f"       Captured Layout:\n      {snippet}")
+                if not valgrind_ok:
+                    print(f"    -> {YELLOW}Memory Leak Flags Intercepted{RESET}{leak_info}")
+
+    print(f"\n{BOLD}===================================================={RESET}")
+    rate = (total_passed / total_tests) * 100 if total_tests > 0 else 0
+    color = GREEN if rate == 100 else YELLOW if rate > 85 else RED
+    print(f"Summary: {color}{total_passed}/{total_tests} Mapped Vectors Passed ({rate:.2f}%){RESET}\n")
+
+if __name__ == "__main__":
+    main()
