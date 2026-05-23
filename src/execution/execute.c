@@ -56,7 +56,6 @@ void	run_parent(t_cmd *curr, int *prev_fd, int fd[2])
 	}
 }
 
-
 /**
  * @brief Checks if a command is a built-in AND has absolutely no pipes.
  */
@@ -81,7 +80,7 @@ static int	is_standalone_builtin(t_cmd *head, t_cmd *curr)
 /**
  * @brief Handles the descriptor creation and process spawning.
  */
-static void	fork_child(t_cmd *cmds, t_minishell *data, int *prev_fd, int *last_p)
+static void	fork_child(t_cmd *cmds, t_minishell *data, int *prev, int *last_p)
 {
 	int	fd[2];
 
@@ -89,11 +88,11 @@ static void	fork_child(t_cmd *cmds, t_minishell *data, int *prev_fd, int *last_p
 		pipe(fd);
 	data->pid = fork();
 	if (data->pid == 0)
-		run_child(cmds, data, *prev_fd, fd);
+		run_child(cmds, data, *prev, fd);
 	else
 	{
 		*last_p = data->pid;
-		run_parent(cmds, prev_fd, fd);
+		run_parent(cmds, prev, fd);
 	}
 }
 
@@ -124,7 +123,10 @@ void	execute(t_cmd *cmds, t_minishell *data)
 	prev_fd = -1;
 	last_pid = -1;
 	head = cmds;
-	prep_all_heredocs(cmds, data);
+	if (!cmds)
+		return ;
+	if (!prep_all_heredocs(cmds, data))
+		return ;
 	while (cmds)
 	{
 		if (is_standalone_builtin(head, cmds))

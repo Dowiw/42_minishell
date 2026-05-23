@@ -317,6 +317,59 @@ def build_test_suite():
     g15.tests.append(TestCase("Up Arrow History Retrieval", ["echo mem\n", "\x1b[A", "\n"], "mem", is_raw_interaction=True))
     suite.append(g15)
 
+    # ==========================================================================
+    # 16. ADVANCED VARIABLE EXPANSION & EDGE CASES
+    # ==========================================================================
+    g16 = TestGroup("16. Advanced Variable Expansion Edge Cases")
+    g16.tests.append(TestCase("Variable inside unclosed quote syntax framework", ["echo \"$USER\n"], re.compile(r'error|unclosed|syntax', re.I)))
+    g16.tests.append(TestCase("Expand variable to empty string command segment", ["$NOTHING\n"], ""))
+    g16.tests.append(TestCase("Stitched empty string quotes inside command", ["echo a\"\"\"\"b\n"], "ab"))
+    g16.tests.append(TestCase("Expand exit status trapped in single quotes", ["echo '$?'\n"], "$?"))
+    g16.tests.append(TestCase("Expand exit status inside double quotes", ["/bin/false\n", "echo \"status: $?\"\n"], "status: 1"))
+    suite.append(g16)
+
+    # ==========================================================================
+    # 17. ADVANCED PIPES & EMPTY STRING PATTERNS
+    # ==========================================================================
+    g17 = TestGroup("17. Advanced Pipelines & Empty Strings (The Fix Check)")
+    g17.tests.append(TestCase("Empty string standalone block", ["\"\"\n"], re.compile(r'not found', re.I)))
+    g17.tests.append(TestCase("Empty string right-side pipeline exploit", ["echo | \"\"\n"], re.compile(r'not found', re.I)))
+    g17.tests.append(TestCase("Empty string left-side pipeline exploit", ["\"\" | export\n"], re.compile(r'not found', re.I)))
+    g17.tests.append(TestCase("Multi-pipe with middle execution asset crash", ["echo hi | \"\" | cat\n"], re.compile(r'not found', re.I)))
+    g17.tests.append(TestCase("Export streaming into multi-stage broken consumers", ["export | cat | \"\"\n"], re.compile(r'not found', re.I)))
+    suite.append(g17)
+
+    # ==========================================================================
+    # 18. COMPLEX REDIRECTIONS & SURVIVAL MATRICES
+    # ==========================================================================
+    g18 = TestGroup("18. Complex Redirections & Descriptor Scoping")
+    g18.tests.append(TestCase("Standalone parent built-in output routing", ["echo 42 > parent.txt\n", "cat parent.txt\n"], "42", verify_files=["parent.txt"]))
+    g18.tests.append(TestCase("Standalone parent environment modifier routing", ["export TEST_ROUTING=100 > parent_env.txt\n", "echo $TEST_ROUTING\n"], "100", verify_files=["parent_env.txt"]))
+    g18.tests.append(TestCase("Input file descriptor overlapping output layout", ["echo hello > input.txt\n", "< input.txt cat > output.txt\n", "cat output.txt\n"], "hello", verify_files=["input.txt", "output.txt"]))
+    g18.tests.append(TestCase("Redirection target expanding from environment token", ["export MY_FILE=env_out.txt\n", "echo expansion > $MY_FILE\n", "cat env_out.txt\n"], "expansion", verify_files=["env_out.txt"]))
+    suite.append(g18)
+
+    # ==========================================================================
+    # 19. ADVANCED EXIT STATUS MAPPINGS ($?)
+    # ==========================================================================
+    g19 = TestGroup("19. Advanced Exit Status Verification Arithmetic")
+    g19.tests.append(TestCase("Command cannot execute: Directory target code", ["./src\n", "echo $?\n"], "126"))
+    g19.tests.append(TestCase("Exit wrapping limit matching 8-bit unsigned char", ["exit 259\n", "echo $?\n"], "")) # Shell quits, parent verifies code via status framework
+    g19.tests.append(TestCase("Exit support for negative wrapping boundaries", ["exit -1\n"], ""))
+    g19.tests.append(TestCase("Fatal non-numeric exit override over argument limit", ["exit abc 1 2 3\n"], re.compile(r'numeric argument required', re.I)))
+    g19.tests.append(TestCase("Non-fatal argument overflow preservation state", ["exit 1 2\n", "echo $?\n"], "1"))
+    suite.append(g19)
+
+    # ==========================================================================
+    # 20. PATH ERROR RESOLUTION ATTRIBUTES
+    # ==========================================================================
+    g20 = TestGroup("20. Absolute Path Errors vs Command Finding")
+    g20.tests.append(TestCase("Slash path missing target validation output", ["/bin/non_existent_command\n"], re.compile(r'No such file or directory', re.I)))
+    g20.tests.append(TestCase("Slash path missing target code feedback", ["/bin/non_existent_command\n", "echo $?\n"], "127"))
+    g20.tests.append(TestCase("Relative slash path directory target feedback", ["./src\n"], re.compile(r'Is a directory|Permission denied', re.I)))
+    g20.tests.append(TestCase("Unset PATH execution from pure binary match name", ["export PATH=\"\"\n", "clear\n"], re.compile(r'not found|No such file', re.I)))
+    suite.append(g20)
+
     return suite
 
 def cleanup_workspace(files):

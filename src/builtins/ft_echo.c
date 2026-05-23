@@ -12,9 +12,9 @@
 
 #include "minishell.h"
 
-int check_n_flag(char *str)
+int	check_n_flag(char *str)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	if (str[i] != '-')
@@ -38,7 +38,7 @@ void	ft_echo(int argc, char **argv)
 
 	i = 1;
 	no_last_line = 0;
-	while(argv[i] && check_n_flag(argv[i]))
+	while (argv[i] && check_n_flag(argv[i]))
 	{
 		no_last_line = 1;
 		i++;

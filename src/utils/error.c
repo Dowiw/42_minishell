@@ -56,7 +56,9 @@ void	print_err(int b_perror, int err_no, char *err)
  */
 void	exit_err(int b_perror, int err_no, char *err, t_minishell *data)
 {
-	print_err(b_perror, err_no, err);
+	if (err)
+		print_err(b_perror, err_no, err);
 	cleanup_shell(data);
+	g_signal = err_no;
 	exit(err_no);
 }

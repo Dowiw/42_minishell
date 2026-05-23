@@ -36,16 +36,10 @@ static int	not_found_env(t_env *env_copy)
 			bool_pwd = 1;
 		curr = curr->next;
 	}
-	if (bool_shlvl == 0)
-	{
-		if (!add_env_var(env_copy, "SHLVL", "1"))
-			return (1);
-
-	}if (bool_pwd == 0)
-	{
-		if (!add_env_var(env_copy, "PWD", getcwd(NULL, 0)))
-			return (1);
-	}
+	if (bool_shlvl == 0 && !add_env_var(&env_copy, "SHLVL", "1"))
+		return (1);
+	if (bool_pwd == 0 && !add_env_var(&env_copy, "PWD", getcwd(NULL, 0)))
+		return (1);
 	return (0);
 }
 
@@ -78,7 +72,7 @@ static int	fill_env(t_env **env_copy, char **envp, t_env **cur)
 	i = 0;
 	while ((*envp)[i] != '=')
 		i++;
-	(*cur)->next= NULL;
+	(*cur)->next = NULL;
 	(*cur)->key = malloc(sizeof(char) * (i + 1));
 	if (!(*cur)->key)
 		return (free((*cur)), free_env(*env_copy), 1);

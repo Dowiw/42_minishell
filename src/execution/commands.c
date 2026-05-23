@@ -35,15 +35,20 @@ static void	fill_redirs(t_token **tok, t_cmd **cmd, t_minishell *data)
 
 /**
  * @brief Fills in commands, heredocs and calls redir filler.
+ *
+ * @return 0 on error, 1 on good
  */
-static void	fill_cmd(t_token **tok, t_cmd **curr, int *i, t_minishell *data)
+static int	fill_cmd(t_token **tok, t_cmd **curr, int *i, t_minishell *data)
 {
+	t_redir	*new;
 	char	*delim;
 	int		exp;
 
 	if ((*tok)->type == WORD)
 	{
 		(*curr)->args[(*i)] = expansion((*tok)->value, data->processed_env);
+		if (!(*curr)->args[(*i)])
+			return (0);
 		(*i)++;
 	}
 	else if ((*tok)->type == HEREDOC)
@@ -51,11 +56,31 @@ static void	fill_cmd(t_token **tok, t_cmd **curr, int *i, t_minishell *data)
 		(*curr)->heredoc = 1;
 		exp = !has_quotes((*tok)->next->value);
 		delim = strip_quotes_only((*tok)->next->value);
-		add_redir_back(&(*curr)->redirs, new_redir_node(HEREDOC, delim, exp));
+		new = new_redir_node(HEREDOC, delim, exp);
+		if (!new)
+			return (0);
+		add_redir_back(&(*curr)->redirs, new);
 		(*tok) = (*tok)->next;
 	}
 	else
 		fill_redirs(tok, curr, data);
+	return (1);
+}
+
+/**
+ * @brief Tiny helper to allocate a new command and attach it to the list.
+ */
+static t_cmd	*start_new_cmd(t_token *tok, t_cmd **head, int *i)
+{
+	t_cmd	*new_cmd;
+
+	new_cmd = init_cmd(tok);
+	if (new_cmd)
+	{
+		add_cmd_back(head, new_cmd);
+		*i = 0;
+	}
+	return (new_cmd);
 }
 
 /**
@@ -66,27 +91,23 @@ t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data)
 {
 	int		i;
 	t_cmd	*head;
-	t_cmd	*curr_cmd;
-	t_token	*curr_tok;
+	t_cmd	*curr;
 
 	i = 0;
 	head = NULL;
-	curr_cmd = NULL;
-	curr_tok = tokens;
-	while (curr_tok)
+	curr = NULL;
+	while (tokens)
 	{
-		if (!curr_cmd)
-		{
-			curr_cmd = init_cmd(curr_tok);
-			add_cmd_back(&head, curr_cmd);
-			i = 0;
-		}
-		if (curr_tok->type == PIPE)
-			curr_cmd = NULL;
-		else
-			fill_cmd(&curr_tok, &curr_cmd, &i, data);
-		if (curr_tok)
-			curr_tok = curr_tok->next;
+		if (!curr)
+			curr = start_new_cmd(tokens, &head, &i);
+		if (!curr)
+			return (NULL);
+		if (tokens->type == PIPE)
+			curr = NULL;
+		else if (!fill_cmd(&tokens, &curr, &i, data))
+			return (NULL);
+		if (tokens)
+			tokens = tokens->next;
 	}
 	return (head);
 }

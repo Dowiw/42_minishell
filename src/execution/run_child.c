@@ -70,21 +70,18 @@ static char	*validate_path(char *cmd_name, t_minishell *data)
 	char		*path;
 	struct stat	path_stat;
 
-	path = get_cmd_path(cmd_name, data->processed_env);
+	path = get_cmd_path(cmd_name, data);
 	if (!path)
 	{
-		ft_putstr_fd(cmd_name, STDERR_FILENO);
-		ft_putstr_fd(": command not found\n", STDERR_FILENO);
-		cleanup_shell(data);
-		exit(127);
+		free(path);
+		exit_err(0, 127, NULL, data);
 	}
 	if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode))
 	{
 		ft_putstr_fd(cmd_name, STDERR_FILENO);
 		ft_putstr_fd(": Is a directory\n", STDERR_FILENO);
 		free(path);
-		cleanup_shell(data);
-		exit(126);
+		exit_err(0, 126, NULL, data);
 	}
 	return (path);
 }

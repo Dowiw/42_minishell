@@ -13,6 +13,21 @@
 #include "minishell.h"
 #include <stdlib.h>
 
+static char	*get_path(t_env *path_node, int i, char *cmd)
+{
+	char	*part_path;
+	char	*path;
+
+	part_path = ft_strjoin(path_node->values[i], "/");
+	if (!part_path)
+		return (print_err(1, 1, "malloc error"), NULL);
+	path = ft_strjoin(part_path, cmd);
+	if (!path)
+		return (free(part_path), print_err(1, 1, "malloc error"), NULL);
+	free(part_path);
+	return (path);
+}
+
 /**
  * @brief Handles the absolute path.
  */
@@ -27,15 +42,42 @@ char	*handle_absolute(char *cmd)
 	return (NULL);
 }
 
+void	path_error(char *cmd, t_minishell *data, t_env *path_node)
+{
+	char	*path;
+	int		i;
+
+	i = 0;
+	while (path_node->values[i])
+	{
+		path = get_path(path_node, i, cmd);
+		if (!path)
+			return (cleanup_shell(data), exit(1));
+		if (access(path, F_OK) == 0 && access(path, X_OK) != 0)
+		{
+			ft_putstr_fd(path, STDERR_FILENO);
+			ft_putstr_fd(": Permission denied\n", STDERR_FILENO);
+			free(path);
+			return ;
+		}
+		free(path);
+		i++;
+	}
+	ft_putstr_fd(cmd, STDERR_FILENO);
+	if (ft_strchr((const char *)cmd, '/'))
+		ft_putstr_fd(": no such file or directory\n", STDERR_FILENO);
+	else
+		ft_putstr_fd(": command not found\n", STDERR_FILENO);
+}
+
 /**
  * @brief Resolves the absolute path of a command.
  * Returns an allocated string with the path, or NULL if not found.
  */
-char	*get_cmd_path(char *cmd, t_env *env_p)
+char	*get_cmd_path(char *cmd, t_minishell *data)
 {
 	t_env		*path_node;
 	char		*path;
-	char		*part_path;
 	int			i;
 
 	if (!cmd || cmd[0] == '\0')
@@ -43,19 +85,19 @@ char	*get_cmd_path(char *cmd, t_env *env_p)
 	path = handle_absolute(cmd);
 	if (path)
 		return (path);
-	path_node = get_env_node(env_p, "PATH");
+	path_node = get_env_node(data->processed_env, "PATH");
 	if (!path_node || !path_node->values)
 		return (NULL);
 	i = 0;
 	while (path_node->values[i])
 	{
-		part_path = ft_strjoin(path_node->values[i], "/");
-		path = ft_strjoin(part_path, cmd);
-		free(part_path);
+		path = get_path(path_node, i, cmd);
+		if (!path)
+			return (cleanup_shell(data), exit(1), NULL);
 		if (access(path, F_OK) == 0 && access(path, X_OK) == 0)
 			return (path);
 		free(path);
 		i++;
 	}
-	return (NULL);
+	return (path_error(cmd, data, path_node), NULL);
 }

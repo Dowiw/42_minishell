@@ -157,7 +157,7 @@ typedef struct s_minishell
 /* ========================================================================== */
 // main.c / initializer.c
 
-int	initialize(int argc, char **argv, char **envp, t_minishell *data);
+int		initialize(int argc, char **argv, char **envp, t_minishell *data);
 
 // prompt.c / raw_mode.c
 
@@ -225,7 +225,7 @@ void	add_redir_back(t_redir **head, t_redir *new_node);
 
 // heredoc.c
 
-void	prep_all_heredocs(t_cmd *cmds, t_minishell *data);
+int		prep_all_heredocs(t_cmd *cmds, t_minishell *data);
 void	unlink_heredocs(t_cmd *cmds);
 int		has_quotes(char *str);
 void	handle_heredoc_backspace(char *buffer, int *i);
@@ -242,7 +242,7 @@ void	append_char(char **res, char c);
 
 // path_resolver.c / check_syntax.c
 
-char	*get_cmd_path(char *cmd, t_env *env_p);
+char	*get_cmd_path(char *cmd, t_minishell *env_p);
 int		check_syntax(t_token *tokens);
 
 // redirs.c (handling file streams)
@@ -258,7 +258,7 @@ char	**convert_env_to_array(t_env *env_list);
 t_env	*get_env_node(t_env *list, char *target_key);
 char	*stitch_env_values(char **values);
 int		modify_variables(t_env **curr);
-int		add_env_var(t_env *copy, char *key, char *value);
+int		add_env_var(t_env **copy, char *key, char *value);
 
 /* ========================================================================== */
 /* BUILTINS                                                                   */

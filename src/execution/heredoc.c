@@ -93,9 +93,9 @@ static int	retrieve_line(char **line, t_redir *redir, t_minishell *data)
 }
 
 /**
- * @brief
+ * @brief Reads the heredocs and puts to file
  */
-static void	read_heredoc(t_redir *redir, t_minishell *data)
+static int	read_heredoc(t_redir *redir, t_minishell *data)
 {
 	int		fd;
 	char	*line;
@@ -103,6 +103,8 @@ static void	read_heredoc(t_redir *redir, t_minishell *data)
 
 	tmp_file = get_tmp_filename(data);
 	fd = open(tmp_file, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	if (fd < 0)
+		return (0);
 	enable_raw_mode(data);
 	while (1)
 	{
@@ -117,12 +119,13 @@ static void	read_heredoc(t_redir *redir, t_minishell *data)
 	close(fd);
 	free(redir->file);
 	redir->file = tmp_file;
+	return (1);
 }
 
 /**
- * @brief
+ * @brief Prepares all the heredocs
  */
-void	prep_all_heredocs(t_cmd *cmds, t_minishell *data)
+int	prep_all_heredocs(t_cmd *cmds, t_minishell *data)
 {
 	t_cmd	*curr_cmd;
 	t_redir	*curr_redir;
@@ -134,9 +137,13 @@ void	prep_all_heredocs(t_cmd *cmds, t_minishell *data)
 		while (curr_redir)
 		{
 			if (curr_redir->type == HEREDOC)
-				read_heredoc(curr_redir, data);
+			{
+				if (!read_heredoc(curr_redir, data))
+					return (0);
+			}
 			curr_redir = curr_redir->next;
 		}
 		curr_cmd = curr_cmd->next;
 	}
+	return (1);
 }

@@ -39,7 +39,7 @@ char	*strip_quotes_only(char *str)
 
 	res = ft_strdup("");
 	if (!res)
-		return (perror("shelld0n[1]: malloc in strip quotes: "), NULL);
+		return (print_err(1, 1, "malloc in heredoc"), NULL);
 	q_state = 0;
 	i = 0;
 	while (str[i])
@@ -66,7 +66,7 @@ char	*expand_heredoc_body(char *str, t_env *env)
 
 	res = ft_strdup("");
 	if (!res)
-		return (perror("shelld0n[1]: malloc in strip quotes: "), NULL);
+		return (print_err(1, 1, "malloc in heredoc"), NULL);
 	i = 0;
 	while (str[i])
 	{
