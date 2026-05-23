@@ -38,6 +38,8 @@ char	*get_cmd_path(char *cmd, t_env *env_p)
 	char		*part_path;
 	int			i;
 
+	if (!cmd || cmd[0] == '\0')
+		return (NULL);
 	path = handle_absolute(cmd);
 	if (path)
 		return (path);

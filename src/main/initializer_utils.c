@@ -15,9 +15,10 @@
 
 /**
  * @brief Wrapper for variable modifier.
- * Expandable.
+ *
+ * @returns 1 for errors, 0 for success
  */
-void	modify_variables(t_env **curr)
+int	modify_variables(t_env **curr)
 {
 	int		temp;
 
@@ -27,16 +28,19 @@ void	modify_variables(t_env **curr)
 		free((*curr)->values[0]);
 		(*curr)->values[0] = ft_itoa(temp);
 		if (!(*curr)->values[0])
-			return ;
+			return (1);
 	}
 	else if (ft_strcmp((*curr)->key, "PWD") == 0)
 	{
 		free((*curr)->values[0]);
 		(*curr)->values[0] = getcwd(NULL, 0);
+		if (!(*curr)->values[0])
+			return (1);
 	}
 	else if (ft_strcmp((*curr)->key, "OLDPWD") == 0)
 	{
 		free((*curr)->values[0]);
 		(*curr)->values[0] = NULL;
 	}
+	return (0);
 }

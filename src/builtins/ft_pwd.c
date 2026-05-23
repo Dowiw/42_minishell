@@ -23,7 +23,7 @@ void	ft_pwd(void)
 	char	path[PATH_MAX];
 
 	if (getcwd(path, PATH_MAX) == NULL)
-		perror("pwd");
+		print_err(1, 1, "getcwd in pwd");
 	else
 		ft_printf("%s\n", path);
 }

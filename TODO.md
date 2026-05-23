@@ -17,7 +17,11 @@
 - [X] `ls > out1.txt > out2.txt` is not creating both files, only out2.txt
 - [X] There is a leak for `cat < nonexistent.txt` exits safely tho
 - [X] Something is happening in `cat /dev/urandom | head -n 5`
-- [ ] Heredoc
+- [X] Heredoc
+- [ ] CD when home is not set
+- [ ] export with no assignations replacing ones with the values
+- [ ] echo -n -n -n variations
+- [ ] 
 
 ### Parsing
 - [X] Read input

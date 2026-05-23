@@ -16,8 +16,10 @@
 /**
  * @brief A subtle check if SHLVL or PWD is not found.
  * This means the shell is level one.
+ *
+ * @returns 1 for error, 0 for sucess
  */
-static void	not_found_env(t_env *env_copy)
+static int	not_found_env(t_env *env_copy)
 {
 	t_env		*curr;
 	int			bool_shlvl;
@@ -35,25 +37,35 @@ static void	not_found_env(t_env *env_copy)
 		curr = curr->next;
 	}
 	if (bool_shlvl == 0)
-		add_env_var(env_copy, "SHLVL", "1");
-	if (bool_pwd == 0)
-		add_env_var(env_copy, "PWD", getcwd(NULL, 0));
+	{
+		if (!add_env_var(env_copy, "SHLVL", "1"))
+			return (1);
+
+	}if (bool_pwd == 0)
+	{
+		if (!add_env_var(env_copy, "PWD", getcwd(NULL, 0)))
+			return (1);
+	}
+	return (0);
 }
 
 /**
  * @brief Modify built in shell environment variables.
  */
-static void	update_variables(t_env *env_copy)
+static int	update_variables(t_env *env_copy)
 {
 	t_env		*curr;
 
 	curr = env_copy;
 	while (curr != NULL)
 	{
-		modify_variables(&curr);
+		if (modify_variables(&curr))
+			return (1);
 		curr = curr->next;
 	}
-	not_found_env(env_copy);
+	if (not_found_env(env_copy))
+		return (1);
+	return (0);
 }
 
 /**
@@ -66,6 +78,7 @@ static int	fill_env(t_env **env_copy, char **envp, t_env **cur)
 	i = 0;
 	while ((*envp)[i] != '=')
 		i++;
+	(*cur)->next= NULL;
 	(*cur)->key = malloc(sizeof(char) * (i + 1));
 	if (!(*cur)->key)
 		return (free((*cur)), free_env(*env_copy), 1);
@@ -74,7 +87,6 @@ static int	fill_env(t_env **env_copy, char **envp, t_env **cur)
 	(*cur)->values = ft_split(*envp + i + 1, ':');
 	if (!(*cur)->values)
 		return (free((*cur)->key), free((*cur)), free_env(*env_copy), 1);
-	(*cur)->next = NULL;
 	return (0);
 }
 
@@ -94,7 +106,7 @@ static int	initialize_env(t_env **env_copy, char **envp)
 		if (!curr)
 			return (free_env((*env_copy)), 1);
 		if (fill_env(env_copy, envp, &curr))
-			return (1);
+			return (free_env((*env_copy)), 1);
 		if ((*env_copy) == NULL)
 			(*env_copy) = curr;
 		else
@@ -102,7 +114,8 @@ static int	initialize_env(t_env **env_copy, char **envp)
 		prev = curr;
 		envp++;
 	}
-	update_variables((*env_copy));
+	if (update_variables((*env_copy)))
+		return (free_env((*env_copy)), 1);
 	return (0);
 }
 
@@ -110,15 +123,17 @@ static int	initialize_env(t_env **env_copy, char **envp)
  * @brief Initialize the environment & signal handlers.
  * Exits failure if too many arguments.
  */
-void	initialize(int argc, char **argv, char **envp, t_minishell *data)
+int	initialize(int argc, char **argv, char **envp, t_minishell *data)
 {
 	(void)argv;
 	if (argc > 1)
 	{
 		ft_putstr_fd("shelld0n[1]: too many arguments\n", STDERR_FILENO);
-		exit(EXIT_FAILURE);
+		return (1);
 	}
 	ft_bzero(data, sizeof(t_minishell));
-	initialize_env(&data->processed_env, envp);
+	if (initialize_env(&data->processed_env, envp))
+		return (print_err(1, 1, "failed to init env"), 1);
 	setup_signals();
+	return (0);
 }

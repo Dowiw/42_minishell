@@ -34,7 +34,7 @@ int	check_input(char *input)
 	}
 	if (quote_state != 0)
 	{
-		print_err(2, "unclosed quotes\n", 1);
+		print_err(0, 2, "syntax: unclosed quotes\n");
 		return (1);
 	}
 	return (0);

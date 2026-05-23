@@ -20,6 +20,8 @@ char	*ft_strdup(const char *s)
 	size_t	i;
 	size_t	s_len;
 
+	if (!s)
+		return (NULL);
 	i = 0;
 	s_len = 0;
 	while (s[s_len])

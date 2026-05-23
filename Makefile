@@ -27,7 +27,7 @@ C_FILES = main/main.c main/prompt.c main/initializer.c env/environment.c \
 	execution/expand.c builtins/ft_echo.c builtins/ft_cd.c builtins/ft_env.c \
 	builtins/ft_exit.c builtins/ft_export.c builtins/ft_pwd.c \
 	builtins/ft_unset.c execution/heredoc.c execution/heredoc_utils.c \
-	redir/redirs.c execution/execute_utils.c utils/error.c
+	redir/redirs.c execution/execute_utils.c utils/error.c lexer/lexer_utils.c
 
 SRC = $(addprefix $(SRC_DIR)/, $(C_FILES))
 
@@ -63,8 +63,6 @@ fclean:
 	@echo "Deleting all binaries in minishell..."
 	@rm -f $(NAME)
 	@rm -f $(OBJ) $(O_BONUS)
-	@rmdir bin/*
-	@rmdir bin
 
 re: fclean all
 

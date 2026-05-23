@@ -75,6 +75,8 @@ static int	manage_exits(char *c, char **input, long *len, t_minishell *data)
  * @brief Manage character and exits.
  * Checks if the function must exit from manage_exits. If not,
  * check if the char is a key, a backspace or a printable character.
+ *
+ * @returns 1 if the parent should exit, 0 if not
  */
 static int	manage_char(char *c, t_minishell *data, long *cursor, long *len)
 {

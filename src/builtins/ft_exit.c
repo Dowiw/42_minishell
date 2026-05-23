@@ -14,28 +14,46 @@
 #include <stdlib.h>
 
 /**
- * @brief Exit
+ * @brief Checking if the number is a valid integer
+ */
+static int	is_valid_numeric(char *str)
+{
+	size_t	i;
+
+	i = 0;
+	if (str[i] == '-' || str[i] == '+')
+		i++;
+	if (!str[i])
+		return (0);
+	while (str[i])
+	{
+		if (!ft_isdigit(str[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+/**
+ * @brief Exit.
  */
 void	ft_exit(t_minishell *data_p, int argc, char **argv)
 {
-	size_t	i;
-	int		exit_code;
+	long long	raw_code;
 
-	i = 0;
-	if (argc > 2)
-		return ((void) ft_printf("exit: too many arguments\n"));
-	if (argc == 1)
-		exit_code = 0;
-	else
+	ft_putstr_fd("exit\n", 1);
+	if (argc > 1)
 	{
-		while (argv[1][i])
+		if (!is_valid_numeric(argv[1]))
+			exit_err(0, 2, "exit: numeric argument required\n", data_p);
+		if (argc > 2)
 		{
-			if (!ft_isdigit(argv[1][i]))
-				return (exit_err(0, 2, "numeric argument required\n", data_p));
-			i++;
+			print_err(0, 1, "exit: too many arguments\n");
+			return ;
 		}
-		exit_code = ft_atoi(argv[1]);
+		raw_code = ft_atoi(argv[1]);
+		g_signal = (int)((unsigned char)raw_code);
 	}
 	cleanup_shell(data_p);
-	exit(exit_code);
+	exit(g_signal);
 }

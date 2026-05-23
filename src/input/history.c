@@ -29,8 +29,10 @@ void	reset_history(t_history *history)
 
 /**
  * @brief Initialize the new history string.
+ *
+ * @returns 1 for errors, 0 for success
  */
-static void	init_new_history(t_history **his, long *c, char **new, char **in)
+static int	init_new_history(t_history **his, long *c, char **new, char **in)
 {
 	if ((*his)->history)
 	{
@@ -41,11 +43,16 @@ static void	init_new_history(t_history **his, long *c, char **new, char **in)
 		}
 	}
 	new[(*c)] = ft_strdup((*in));
+	if (!new[(*c)])
+		return (1);
 	new[(*c) + 1] = NULL;
+	return (0);
 }
 
 /**
  * @brief Appends a new command string to the shell's history array.
+ *
+ * If the input is NULL or the inputted string is "", it returns
  */
 void	append_to_history(char **input, t_history *history)
 {
@@ -65,9 +72,10 @@ void	append_to_history(char **input, t_history *history)
 		return ;
 	new_history = malloc(sizeof(char *) * (count + 2));
 	if (!new_history)
-		return ;
+		return (print_err(1, 1, "failed to append history"));
 	count = 0;
-	init_new_history(&history, &count, new_history, input);
+	if (init_new_history(&history, &count, new_history, input))
+		return (free(new_history), print_err(1, 1, "failed to add history"));
 	if (history->history)
 		free(history->history);
 	history->history_count = count + 1;

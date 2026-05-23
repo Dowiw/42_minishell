@@ -25,7 +25,7 @@ char	*get_key(const char *key_value)
 		i++;
 	key = malloc(sizeof(char) * (i + 1));
 	if (!key)
-		return (NULL);
+		return (print_err(1, 1, "failed to malloc key"), NULL);
 	ft_strncpy(key, key_value, i);
 	key[i] = '\0';
 	return (key);
@@ -56,27 +56,54 @@ static void	print_export(t_env *env)
 
 	while (env)
 	{
-		ft_printf("declare -x %s=\"", env->key);
+		ft_printf("declare -x %s", env->key);
 		i = 0;
-		while ((env->values)[i])
+		if (env->values)
 		{
-			if (i > 0)
-				ft_printf(":");
-			ft_printf("%s", (env->values)[i]);
-			i++;
+			ft_printf("=\"");
+			while ((env->values)[i])
+			{
+				if (i > 0)
+					ft_printf(":");
+				ft_printf("%s", (env->values)[i]);
+				i++;
+			}
+			ft_printf("\"");
 		}
-		ft_printf("\"\n");
+		ft_printf("\n");
 		env = env->next;
 	}
 }
 
 /**
- * @brief Error wrapper
+ * @brief Export
  */
-static void	export_error(int errornum, char *key_value)
+static int	export_variable(t_env *env, char **argv, int i)
 {
-	if (errornum == 1)
-		ft_printf("export: `%s': not a valid identifier\n", key_value);
+	char	*key;
+	t_env	*env_node;
+
+	key = get_key(argv[(i)]);
+	if (!key)
+		return (print_err(1, 1, "malloc in export"),0);
+	if (key[0] == '\0' || !ft_isalpha(key[0]))
+	{
+		ft_printf("shelld0n[1]: export: `%s': not a valid identifier\n", key);
+		free(key);
+		return (g_signal = 1, 0);
+	}
+	env_node = get_env_node(env, key);
+	if (env_node)
+	{
+		free_str_arrays(env_node->values);
+		env_node->values = ft_split(get_values_pos(argv[(i)]), ':');
+		if (!env_node->values)
+			return (free(key), print_err(1, 1, "malloc in export"), 0);
+	}
+	else
+		add_env_var(env, key, (char *)get_values_pos(argv[(i)]));
+	free(key);
+	return (1);
 }
 
 /**
@@ -85,28 +112,25 @@ static void	export_error(int errornum, char *key_value)
 void	ft_export(t_env *env, int argc, char **argv)
 {
 	int		i;
-	char	*key;
-	t_env	*env_node;
 
 	if (argc == 1)
 		return (print_export(env));
 	i = 1;
 	while (i < argc)
 	{
-		key = get_key(argv[i]);
-		if (!key)
-			return ;
-		if (key[0] == '\0' || !ft_isalpha(key[0]))
-			return (free(key), export_error(1, argv[i]));
-		env_node = get_env_node(env, key);
-		if (env_node)
+		if (ft_strchr((const char *) argv[i], '='))
 		{
-			free_str_arrays(env_node->values);
-			env_node->values = ft_split(get_values_pos(argv[i]), ':');
+			if (!export_variable(env, argv, i))
+				return ;
 		}
 		else
-			add_env_var(env, key, (char *)get_values_pos(argv[i]));
-		free(key);
+			if (!get_env_node(env, argv[i]))
+			{
+				add_env_var(env, argv[i], NULL);
+				if (!get_env_node(env, argv[i])->key)
+					return (print_err(1, 1, "malloc in export"));
+			}
 		i++;
 	}
+	g_signal = 0;
 }

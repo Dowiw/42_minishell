@@ -157,7 +157,7 @@ typedef struct s_minishell
 /* ========================================================================== */
 // main.c / initializer.c
 
-void	initialize(int argc, char **argv, char **envp, t_minishell *data);
+int	initialize(int argc, char **argv, char **envp, t_minishell *data);
 
 // prompt.c / raw_mode.c
 
@@ -202,6 +202,8 @@ t_list	*parse_tokens(char *input);
 t_token	*new_token(char *value, t_token_type type);
 void	add_token_back(t_token **list, t_token *new_node);
 int		get_token_len(char *str);
+
+int		handle_pipe_token(t_token **list);
 
 /* ========================================================================== */
 /* EXECUTION                                                                  */
@@ -255,8 +257,8 @@ void	handle_pipes(t_cmd *cmd, int *prev_fd, int fd[2]);
 char	**convert_env_to_array(t_env *env_list);
 t_env	*get_env_node(t_env *list, char *target_key);
 char	*stitch_env_values(char **values);
-void	modify_variables(t_env **curr);
-void	add_env_var(t_env *copy, char *key, char *value);
+int		modify_variables(t_env **curr);
+int		add_env_var(t_env *copy, char *key, char *value);
 
 /* ========================================================================== */
 /* BUILTINS                                                                   */
@@ -287,6 +289,6 @@ void	free_str_arrays(char **str);
 // error.c
 
 void	exit_err(int b_perror, int err_no, char *err, t_minishell *data);
-void	print_err(int err_no, char *err, int b_print);
+void	print_err(int b_perror, int err_no, char *err);
 
 #endif

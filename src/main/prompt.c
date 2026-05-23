@@ -34,9 +34,17 @@ void	write_prompt(void)
 	{
 		write(1, "shelld0n[", 10);
 		sig = ft_itoa(g_signal);
-		write(1, sig, ft_strlen(sig));
-		free(sig);
-		write(1, "] $> ", 6);
+		if (!sig)
+			write(1, "1", 1);
+		else
+		{
+			write(1, sig, ft_strlen(sig));
+			free(sig);
+		}
+		write(1, "] ", 2);
+		if (!sig)
+			write(1, "failed to malloc for sig in prompt ", 35);
+		write(1, "$> ", 3);
 	}
 	else
 		write(1, "shelld0n $> ", 13);

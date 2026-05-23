@@ -20,7 +20,7 @@ void	ft_env(t_env *env, int argc)
 	int	i;
 
 	if (argc > 1)
-		return ;
+		return (print_err(0, 1, "env: does not handle arguments\n"));
 	while (env)
 	{
 		if (*(env->values))

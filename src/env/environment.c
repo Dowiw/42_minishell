@@ -115,29 +115,43 @@ t_env	*get_env_node(t_env *list, char *target_key)
 /**
  * @brief Appends a newly allocated environment variable to the
  * env_vars structure. Will also work for an empty list.
+ * If key is NULL, it does not add the env var.
+ * But if value is NULL, it appends that to the key.
+ *
+ * The key is allocated. The values are split.
+ *
+ * @returns 1 for sucess, 0 for error
  */
-void	add_env_var(t_env *copy, char *key, char *value)
+int	add_env_var(t_env *copy, char *key, char *value)
 {
 	t_env	*curr;
 	t_env	*new_node;
 
+	if (!key)
+		return (0);
 	new_node = malloc(sizeof(t_env));
 	if (!new_node)
-		perror("shelld0n[1]: add_env_var malloc: ");
+		return (print_err(0, 1, "env malloc"), 0);
 	new_node->key = ft_strdup(key);
 	if (!new_node->key)
-		perror("shelld0n[1]: add_env_var malloc: ");
-	new_node->values = ft_split(value, ':');
-	if (!new_node->values)
-		perror("shelld0n[1]: add_env_var malloc: ");
+		return (print_err(0, 1, "env malloc"), free(new_node), 0);
+	if (!value)
+		new_node->values = NULL;
+	else
+	{
+		new_node->values = ft_split(value, ':');
+		if (!new_node->values)
+			return (print_err(0, 1, "env malloc"), free(new_node), free(key), 0);
+	}
 	new_node->next = NULL;
 	if (copy == NULL)
 	{
 		copy = new_node;
-		return ;
+		return (1);
 	}
 	curr = copy;
 	while (curr->next != NULL)
 		curr = curr->next;
 	curr->next = new_node;
+	return (1);
 }
