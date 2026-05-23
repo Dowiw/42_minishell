@@ -26,4 +26,5 @@ void	ft_pwd(void)
 		print_err(1, 1, "getcwd in pwd");
 	else
 		ft_printf("%s\n", path);
+	g_signal = 0;
 }

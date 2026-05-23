@@ -55,4 +55,5 @@ void	ft_unset(t_env **env_p, int argc, char **argv)
 		*env_p = delete_node(*env_p, get_env_node(*env_p, argv[i]));
 		i++;
 	}
+	g_signal = 0;
 }

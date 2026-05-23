@@ -38,4 +38,5 @@ void	ft_env(t_env *env, int argc)
 		}
 		env = env->next;
 	}
+	g_signal = 0;
 }

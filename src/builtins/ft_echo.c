@@ -52,4 +52,5 @@ void	ft_echo(int argc, char **argv)
 	}
 	if (!no_last_line)
 		ft_printf("\n");
+	g_signal = 0;
 }
