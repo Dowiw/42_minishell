@@ -83,7 +83,6 @@ static int	export_variable(t_env *env, char **argv, int i)
 	char	*key;
 	t_env	*env_node;
 
-	ft_printf("export : %s\n", argv[i]);
 	key = get_key(argv[(i)]);
 	if (!key)
 		return (print_err(1, 1, "malloc in export"), 0);
