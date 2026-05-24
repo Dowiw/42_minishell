@@ -23,7 +23,7 @@ void	ft_env(t_env *env, int argc)
 		return (print_err(0, 1, "env: does not handle arguments\n"));
 	while (env)
 	{
-		if (*(env->values))
+		if (env->values)
 		{
 			ft_printf("%s=", env->key);
 			i = 0;

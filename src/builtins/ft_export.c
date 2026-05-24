@@ -83,14 +83,15 @@ static int	export_variable(t_env *env, char **argv, int i)
 	char	*key;
 	t_env	*env_node;
 
+	ft_printf("export : %s\n", argv[i]);
 	key = get_key(argv[(i)]);
 	if (!key)
 		return (print_err(1, 1, "malloc in export"), 0);
 	if (key[0] == '\0' || !ft_isalpha(key[0]))
 	{
-		ft_printf("shelld0n[1]: export: `%s': not a valid identifier\n", key);
-		free(key);
-		return (g_signal = 1, 0);
+		ft_printf("shelld0n[1]: export: `%s': not a valid identifier\n",
+			argv[i]);
+		return (free(key), g_signal = 1, 0);
 	}
 	env_node = get_env_node(env, key);
 	if (env_node)
@@ -123,6 +124,9 @@ void	ft_export(t_env *env, int argc, char **argv)
 			if (!export_variable(env, argv, i))
 				return ;
 		}
+		else if (!ft_isalpha(argv[i][0]))
+			return (g_signal = 1, (void) ft_printf("shelld0n[1]: export: `%s':\
+not a valid identifier\n", argv[i]));
 		else if (!get_env_node(env, argv[i]))
 		{
 			add_env_var(&env, argv[i], NULL);
