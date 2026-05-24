@@ -18,10 +18,17 @@
 - [X] There is a leak for `cat < nonexistent.txt` exits safely tho
 - [X] Something is happening in `cat /dev/urandom | head -n 5`
 - [X] Heredoc
-- [ ] CD when home is not set
-- [ ] export with no assignations replacing ones with the values
-- [ ] echo -n -n -n variations
-- [ ] 
+- [X] CD when home is not set
+- [X] export with no assignations replacing ones with the values
+- [X] echo -n -n -n variations
+- [X] export =========123
+- [X] env | wc -l
+- [X] $NOVAR
+- [X] export T="echo segfault | grep segfault"
+      $T
+- [ ]
+
+
 
 ### Parsing
 - [X] Read input
