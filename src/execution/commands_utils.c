@@ -11,30 +11,62 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdio.h>
 #include <stdlib.h>
 
 /**
- * @brief Counts tokens until the next pipe to size the args array safely.
+ * @brief Helper to determine how many words an unquoted expansion produces.
  */
-int	count_args(t_token *curr)
+static int	count_split_words(char *expanded)
 {
-	int	count;
+	char	**matrix;
+	int		count;
+
+	if (!expanded)
+		return (0);
+	matrix = ft_split(expanded, ' ');
+	if (!matrix)
+		return (0);
+	count = 0;
+	while (matrix[count])
+		count++;
+	free_str_arrays(matrix);
+	return (count);
+}
+
+/**
+ * @brief Counts tokens until the next pipe, factoring in word splitting.
+ */
+int	count_args(t_token *curr, t_minishell *data)
+{
+	int		count;
+	char	*exp;
 
 	count = 0;
 	while (curr && curr->type != PIPE)
 	{
-		count++;
+		if (curr->type == WORD)
+		{
+			exp = expansion(curr->value, data->processed_env);
+			if (!exp)
+				return (-1);
+			if (exp && exp[0] == '\0' && !has_quotes(curr->value))
+				count += 0;
+			else if (exp && !has_quotes(curr->value)
+				&& (ft_strchr(exp, ' ') || ft_strchr(exp, '\t')))
+				count += count_split_words(exp);
+			else
+				count++;
+			free(exp);
+		}
 		curr = curr->next;
 	}
 	return (count);
 }
 
 /**
- * @brief Allocates a new command node and its arguments array.
- * Max args is an int because of argc.
+ * @brief Allocates a new command node and its arguments array safely.
  */
-t_cmd	*init_cmd(t_token *curr_start)
+t_cmd	*init_cmd(t_token *curr_start, t_minishell *data)
 {
 	t_cmd	*cmd;
 	int		max_args;
@@ -42,7 +74,9 @@ t_cmd	*init_cmd(t_token *curr_start)
 	cmd = ft_calloc(1, sizeof(t_cmd));
 	if (!cmd)
 		return (print_err(1, 1, "malloc in init_cmd"), NULL);
-	max_args = count_args(curr_start);
+	max_args = count_args(curr_start, data);
+	if (max_args < 0)
+		return (free(cmd), print_err(1, 1, "fail in init_cmd"), NULL);
 	cmd->args = ft_calloc(max_args + 1, sizeof(char *));
 	if (!cmd->args)
 		return (free(cmd), print_err(1, 1, "malloc in init_cmd"), NULL);
@@ -50,8 +84,7 @@ t_cmd	*init_cmd(t_token *curr_start)
 }
 
 /**
- * @brief Similar to append to end of list.
- * Appends the node to the back of list.
+ * @brief Appends a command node to the back of the list.
  */
 void	add_cmd_back(t_cmd **list, t_cmd *new_cmd)
 {

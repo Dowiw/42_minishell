@@ -45,12 +45,7 @@ static int	fill_cmd(t_token **tok, t_cmd **curr, int *i, t_minishell *data)
 	int		exp;
 
 	if ((*tok)->type == WORD)
-	{
-		(*curr)->args[(*i)] = expansion((*tok)->value, data->processed_env);
-		if (!(*curr)->args[(*i)])
-			return (0);
-		(*i)++;
-	}
+		return (fill_word(tok, curr, i, data));
 	else if ((*tok)->type == HEREDOC)
 	{
 		(*curr)->heredoc = 1;
@@ -70,11 +65,11 @@ static int	fill_cmd(t_token **tok, t_cmd **curr, int *i, t_minishell *data)
 /**
  * @brief Tiny helper to allocate a new command and attach it to the list.
  */
-static t_cmd	*start_new_cmd(t_token *tok, t_cmd **head, int *i)
+static t_cmd	*new_cmd(t_token *tok, t_cmd **head, int *i, t_minishell *data)
 {
 	t_cmd	*new_cmd;
 
-	new_cmd = init_cmd(tok);
+	new_cmd = init_cmd(tok, data);
 	if (new_cmd)
 	{
 		add_cmd_back(head, new_cmd);
@@ -99,7 +94,7 @@ t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data)
 	while (tokens)
 	{
 		if (!curr)
-			curr = start_new_cmd(tokens, &head, &i);
+			curr = new_cmd(tokens, &head, &i, data);
 		if (!curr)
 			return (NULL);
 		if (tokens->type == PIPE)

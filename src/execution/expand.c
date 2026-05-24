@@ -15,6 +15,9 @@
 
 /**
  * @brief Helper to extract a variable name and fetch its stitched value.
+ * If the var is just the question mark, expand the g_sig
+ * If the len of the str is 0, then return $
+ * Stitch env variable
  */
 static char	*expand_var(char **str, t_env *env)
 {
@@ -29,7 +32,8 @@ static char	*expand_var(char **str, t_env *env)
 		return (ft_itoa(g_signal));
 	}
 	len = 0;
-	while ((*str)[len] && (ft_isalnum((*str)[len]) || (*str)[len] == '_'))
+	while ((*str)[len] && (ft_isalnum((*str)[len])
+			|| (*str)[len] == '_'))
 		len++;
 	if (len == 0)
 		return (ft_strdup("$"));
@@ -88,6 +92,8 @@ char	*expansion(char *str, t_env *env)
 	int		old_state;
 
 	res = ft_strdup("");
+	if (!res)
+		return (NULL);
 	quote_state = 0;
 	i = 0;
 	while (str[i])
@@ -95,11 +101,11 @@ char	*expansion(char *str, t_env *env)
 		old_state = quote_state;
 		update_quote_state(str[i], &quote_state);
 		if (old_state != quote_state)
-		{
 			i++;
-			continue ;
-		}
-		if (str[i] == '$' && quote_state != 1)
+		else if (str[i] == '$' && quote_state == 0
+			&& (str[i + 1] == '\'' || str[i + 1] == '\"'))
+			i++;
+		else if (str[i] == '$' && quote_state != 1)
 			handle_expansion(str, &i, &res, env);
 		else
 			append_char(&res, str[i++]);

@@ -72,10 +72,7 @@ static char	*validate_path(char *cmd_name, t_minishell *data)
 
 	path = get_cmd_path(cmd_name, data);
 	if (!path)
-	{
-		free(path);
 		exit_err(0, 127, NULL, data);
-	}
 	if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode))
 	{
 		ft_putstr_fd(cmd_name, STDERR_FILENO);

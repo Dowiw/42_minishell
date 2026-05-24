@@ -54,6 +54,8 @@ void	run_parent(t_cmd *curr, int *prev_fd, int fd[2])
 		close(fd[1]);
 		(*prev_fd) = fd[0];
 	}
+	else
+		*prev_fd = -1;
 }
 
 /**
