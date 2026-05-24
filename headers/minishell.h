@@ -217,9 +217,9 @@ void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
 
 // commands.c / commands_utils.c
 
-t_cmd	*init_cmd(t_token *curr_start);
+t_cmd	*init_cmd(t_token *curr_start, t_minishell *data);
 void	add_cmd_back(t_cmd **list, t_cmd *new_cmd);
-int		count_args(t_token *curr);
+int		count_args(t_token *curr, t_minishell *data);
 t_redir	*new_redir_node(t_token_type type, char *file, int exp);
 void	add_redir_back(t_redir **head, t_redir *new_node);
 
@@ -239,6 +239,11 @@ void	handle_expansion(char *str, int *i, char **res, t_env *env);
 void	update_quote_state(char c, int *quote_state);
 char	*strip_quotes_only(char *str);
 void	append_char(char **res, char c);
+
+// expand_utils.c
+
+int	fill_word(t_token **tok, t_cmd **curr, int *i, t_minishell *data);
+
 
 // path_resolver.c / check_syntax.c
 
