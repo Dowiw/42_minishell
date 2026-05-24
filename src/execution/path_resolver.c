@@ -12,6 +12,19 @@
 
 #include "minishell.h"
 #include <stdlib.h>
+#include <fcntl.h>
+
+/**
+ * @brief Wrapper for cheking the right APPEND or TRUNC flag
+ */
+int	check_and_set_flags(t_redir *r, int flags)
+{
+	if (r->type == APPEND)
+		flags |= O_APPEND;
+	else
+		flags |= O_TRUNC;
+	return (flags);
+}
 
 static char	*get_path(t_env *path_node, int i, char *cmd)
 {

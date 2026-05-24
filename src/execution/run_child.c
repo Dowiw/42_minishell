@@ -18,62 +18,6 @@
 #include <stdlib.h>
 
 /**
- * @brief Wrapper for cheking the right APPEND or TRUNC flag
- */
-static int	check_and_set_flags(t_redir *r, int flags)
-{
-	if (r->type == APPEND)
-		flags |= O_APPEND;
-	else
-		flags |= O_TRUNC;
-	return (flags);
-}
-
-/**
- * @brief Opens the redirect file descriptor for output or append,
- * then duplicates it to STDOUT_FILENO.
- */
-static int	handle_output_redirect(t_redir *r, t_minishell *data)
-{
-	int	fd;
-	int	flags;
-
-	flags = O_WRONLY | O_CREAT;
-	flags = check_and_set_flags(r, flags);
-	fd = open(r->file, flags, 0644);
-	if (fd < 0)
-		exit_err(1, 1, "open in redirections", data);
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
-	return (0);
-}
-
-/**
- * @brief Applies redirections of the child
- */
-static void	apply_redirections_child(t_cmd *cmd, t_minishell *data)
-{
-	t_redir	*r;
-	int		fd;
-
-	r = cmd->redirs;
-	while (r)
-	{
-		if (r->type == REDIR_IN || r->type == HEREDOC)
-		{
-			fd = open(r->file, O_RDONLY);
-			if (fd < 0)
-				exit_err(1, 1, "open in redirections", data);
-			dup2(fd, STDIN_FILENO);
-			close(fd);
-		}
-		else
-			handle_output_redirect(r, data);
-		r = r->next;
-	}
-}
-
-/**
  * @brief Validates if the command exists and is not a directory.
  * Handles exits 127 (not found) and 126 (directory).
  */
@@ -143,6 +87,9 @@ void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2])
 	char	**fresh_env;
 	char	*cmd_path;
 
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGPIPE, SIG_DFL);
 	handle_pipes(cmd, &prev_fd, fd);
 	apply_redirections_child(cmd, data);
 	if (!cmd->args[0])

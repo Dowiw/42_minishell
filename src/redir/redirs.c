@@ -12,6 +12,51 @@
 
 #include "minishell.h"
 #include <stdlib.h>
+#include <fcntl.h>
+
+/**
+ * @brief Opens the redirect file descriptor for output or append,
+ * then duplicates it to STDOUT_FILENO.
+ */
+static int	handle_output_redirect(t_redir *r, t_minishell *data)
+{
+	int	fd;
+	int	flags;
+
+	flags = O_WRONLY | O_CREAT;
+	flags = check_and_set_flags(r, flags);
+	fd = open(r->file, flags, 0644);
+	if (fd < 0)
+		exit_err(1, 1, "open in redirections", data);
+	dup2(fd, STDOUT_FILENO);
+	close(fd);
+	return (0);
+}
+
+/**
+ * @brief Applies redirections of the child
+ */
+void	apply_redirections_child(t_cmd *cmd, t_minishell *data)
+{
+	t_redir	*r;
+	int		fd;
+
+	r = cmd->redirs;
+	while (r)
+	{
+		if (r->type == REDIR_IN || r->type == HEREDOC)
+		{
+			fd = open(r->file, O_RDONLY);
+			if (fd < 0)
+				exit_err(1, 1, "open in redirections", data);
+			dup2(fd, STDIN_FILENO);
+			close(fd);
+		}
+		else
+			handle_output_redirect(r, data);
+		r = r->next;
+	}
+}
 
 /**
  * @brief Mallocs a redirect node
