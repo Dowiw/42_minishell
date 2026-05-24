@@ -213,6 +213,7 @@ int		handle_pipe_token(t_token **list);
 void	execute(t_cmd *cmds, t_minishell *data);
 t_cmd	*tokens_to_cmds(t_token *tokens, t_minishell *data);
 int		run_parent_inbuilt(t_cmd *cmd, t_minishell *data);
+int		check_and_set_flags(t_redir *r, int flags);
 void	run_child(t_cmd *cmd, t_minishell *data, int prev_fd, int fd[2]);
 
 // commands.c / commands_utils.c
@@ -242,8 +243,7 @@ void	append_char(char **res, char c);
 
 // expand_utils.c
 
-int	fill_word(t_token **tok, t_cmd **curr, int *i, t_minishell *data);
-
+int		fill_word(t_token **tok, t_cmd **curr, int *i, t_minishell *data);
 
 // path_resolver.c / check_syntax.c
 
@@ -252,6 +252,7 @@ int		check_syntax(t_token *tokens);
 
 // redirs.c (handling file streams)
 
+void	apply_redirections_child(t_cmd *cmd, t_minishell *data);
 void	handle_pipes(t_cmd *cmd, int *prev_fd, int fd[2]);
 
 /* ========================================================================== */
