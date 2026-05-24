@@ -13,6 +13,29 @@
 #include "minishell.h"
 #include <stdlib.h>
 
+// /**
+//  * @brief Gathers input depending on the descriptor configuration environment.
+//  * If interactive, it engages raw key interception mode.
+//  * Otherwise, it reads raw stream lines cleanly via get_next_line.
+//  */
+// static char	*get_next_command(t_minishell *data)
+// {
+// 	char	*raw_line;
+// 	char	*trimmed_line;
+
+// 	if (isatty(STDIN_FILENO))
+// 	{
+// 		init_prompt(data);
+// 		return (listen_input(STDIN_FILENO, data));
+// 	}
+// 	raw_line = get_next_line(STDIN_FILENO);
+// 	if (!raw_line)
+// 		return (NULL);
+// 	trimmed_line = ft_strtrim(raw_line, "\n");
+// 	free(raw_line);
+// 	return (trimmed_line);
+// }
+
 /**
  * @brief Main is main.
  */
