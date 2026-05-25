@@ -2,16 +2,17 @@
 
 ### Chores
 
-- [ ] clean up the header
+- [X] clean up the header
 - [ ] nicer prompt maybe
 - [X] norminette the code
+- [ ] move files from sucessful evaluation
 
 ### TODOs
 
-- [ ] append built in commands to execution
+- [x] append built in commands to execution
 - [X] allow execution from path "./bin/..." by checking after the . or ..
 - [X] make the cleanup function
-- [ ] check for input errors in redirections, check for every error tbh.
+- [x] check for input errors in redirections, check for every error tbh.
 - [X] free the buffer when CTRL C is pressed
 - [X] Error when path points to a folder rather than executable binary
 - [X] `ls > out1.txt > out2.txt` is not creating both files, only out2.txt
@@ -26,9 +27,6 @@
 - [X] $NOVAR
 - [X] export T="echo segfault | grep segfault"
       $T
-- [ ]
-
-
 
 ### Parsing
 - [X] Read input
@@ -45,7 +43,7 @@
   - [X] Handle Syntax errors
 
 ### Commands
-- [ ] Built-in commands
+- [x] Built-in commands
 
   - [x] `echo` with `-n`
     - Remarks: Function expects only tokens after echo including echo as argv[0].
@@ -87,8 +85,8 @@
   - [X] `<<` should be given a delimiter, it will read the input until the delimiter is seen. It doesn't have to update history.
   - Note: do check manual and heredoc
 - [X] External commands
-  - [ ] Handle `$ENV` outputting proper commands
-  - [ ] Handle error for non-existing commands
+  - [x] Handle `$ENV` outputting proper commands
+  - [x] Handle error for non-existing commands
     - Remarks: to test
 
 ### Interactive mode
@@ -97,8 +95,8 @@
 - [X] `ctrl + \` does nothing
 
 ### Extra
-- [ ] Describe functions
-- [ ] Wrap-up `README.md`
+- [x] Describe functions
+- [x] Wrap-up `README.md`
 
 ### Notes
 
