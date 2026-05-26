@@ -116,6 +116,8 @@ static int	initialize_env(t_env **env_copy, char **envp)
 /**
  * @brief Initialize the environment & signal handlers.
  * Exits failure if too many arguments.
+ *
+ * @returns 0 for err, 1 for gut
  */
 int	initialize(int argc, char **argv, char **envp, t_minishell *data)
 {
@@ -123,11 +125,11 @@ int	initialize(int argc, char **argv, char **envp, t_minishell *data)
 	if (argc > 1)
 	{
 		ft_putstr_fd("shelld0n[1]: too many arguments\n", STDERR_FILENO);
-		return (1);
+		return (0);
 	}
 	ft_bzero(data, sizeof(t_minishell));
 	if (initialize_env(&data->processed_env, envp))
-		return (print_err(1, 1, "failed to init env"), 1);
+		return (print_err(1, 1, "failed to init env"), 0);
 	setup_signals();
-	return (0);
+	return (1);
 }

@@ -3,17 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   path_resolver.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kmonjard <kmonjard@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: anematol <anematol@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/05 00:05:25 by kmonjard          #+#    #+#             */
-/*   Updated: 2026/05/14 18:15:16 by kmonjard         ###   ########.fr       */
+/*   Updated: 2026/05/24 13:34:54 by anematol         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 #include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 /**
  * @brief Wrapper for cheking the right APPEND or TRUNC flag
@@ -43,58 +42,45 @@ static char	*get_path(t_env *path_node, int i, char *cmd)
 }
 
 /**
- * @brief Handles paths containing slashes (absolute or relative).
- * Exits cleanly with exact status codes if invalid.
+ * @brief Handles the absolute path.
  */
-static char	*handle_absolute(char *cmd, t_minishell *data)
+char	*handle_absolute(char *cmd)
 {
-	if (access(cmd, F_OK) == 0)
+	if (ft_strchr(cmd, '/'))
 	{
-		if (access(cmd, X_OK) == 0)
+		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) == 0)
 			return (ft_strdup(cmd));
-		ft_putstr_fd("shelld0n: ", STDERR_FILENO);
-		ft_putstr_fd(cmd, STDERR_FILENO);
-		ft_putstr_fd(": Permission denied\n", STDERR_FILENO);
-		cleanup_shell(data);
-		exit(126);
+		return (NULL);
 	}
-	ft_putstr_fd("shelld0n: ", STDERR_FILENO);
-	ft_putstr_fd(cmd, STDERR_FILENO);
-	ft_putstr_fd(": No such file or directory\n", STDERR_FILENO);
-	cleanup_shell(data);
-	exit(127);
+	return (NULL);
 }
 
-/**
- * @brief Checks the PATH for non-executable but existing files.
- * If found, throws 126. Else, returns to let validate_path throw 127.
- */
-static void	check_path_permissions(char *cmd, t_minishell *data, t_env *p_node)
+void	path_error(char *cmd, t_minishell *data, t_env *path_node)
 {
 	char	*path;
 	int		i;
 
-	i = 0;
-	while (p_node->values[i])
+	i = -1;
+	while (path_node && path_node->values[++i])
 	{
-		path = get_path(p_node, i, cmd);
+		path = get_path(path_node, i, cmd);
 		if (!path)
-		{
-			cleanup_shell(data);
-			exit(1);
-		}
+			return (cleanup_shell(data), exit(1));
 		if (access(path, F_OK) == 0 && access(path, X_OK) != 0)
-		{
-			ft_putstr_fd("shelld0n: ", STDERR_FILENO);
-			ft_putstr_fd(cmd, STDERR_FILENO);
-			ft_putstr_fd(": Permission denied\n", STDERR_FILENO);
-			free(path);
-			cleanup_shell(data);
-			exit(126);
-		}
+			return (ft_putstr_fd(path, STDERR_FILENO),
+				ft_putstr_fd(": Permission denied\n", STDERR_FILENO),
+				free(path));
 		free(path);
-		i++;
 	}
+	if (ft_strncmp(".", cmd, 1) == 0
+		&& access(cmd, F_OK) == 0 && access(cmd, X_OK) != 0)
+		return (ft_putstr_fd(cmd, STDERR_FILENO),
+			ft_putstr_fd(": Permission denied\n", STDERR_FILENO));
+	ft_putstr_fd(cmd, STDERR_FILENO);
+	if (ft_strchr((const char *)cmd, '/'))
+		ft_putstr_fd(": no such file or directory\n", STDERR_FILENO);
+	else
+		ft_putstr_fd(": command not found\n", STDERR_FILENO);
 }
 
 /**
@@ -103,21 +89,22 @@ static void	check_path_permissions(char *cmd, t_minishell *data, t_env *p_node)
  */
 char	*get_cmd_path(char *cmd, t_minishell *data)
 {
-	t_env	*p_node;
-	char	*path;
-	int		i;
+	t_env		*path_node;
+	char		*path;
+	int			i;
 
 	if (!cmd || cmd[0] == '\0')
 		return (NULL);
-	if (ft_strchr(cmd, '/'))
-		return (handle_absolute(cmd, data));
-	p_node = get_env_node(data->processed_env, "PATH");
-	if (!p_node || !p_node->values)
-		return (NULL);
+	path = handle_absolute(cmd);
+	if (path)
+		return (path);
+	path_node = get_env_node(data->processed_env, "PATH");
+	if (!path_node || !path_node->values)
+		return (path_error(cmd, data, path_node), NULL);
 	i = 0;
-	while (p_node->values[i])
+	while (path_node->values[i])
 	{
-		path = get_path(p_node, i, cmd);
+		path = get_path(path_node, i, cmd);
 		if (!path)
 			return (cleanup_shell(data), exit(1), NULL);
 		if (access(path, F_OK) == 0 && access(path, X_OK) == 0)
@@ -125,6 +112,5 @@ char	*get_cmd_path(char *cmd, t_minishell *data)
 		free(path);
 		i++;
 	}
-	check_path_permissions(cmd, data, p_node);
-	return (NULL);
+	return (path_error(cmd, data, path_node), NULL);
 }

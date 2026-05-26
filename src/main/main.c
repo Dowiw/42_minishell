@@ -43,7 +43,8 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_minishell	data;
 
-	initialize(argc, argv, envp, &data);
+	if (!initialize(argc, argv, envp, &data))
+		return (1);
 	while (1)
 	{
 		init_prompt(&data);
