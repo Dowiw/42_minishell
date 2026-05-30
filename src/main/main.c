@@ -17,6 +17,8 @@
 //  * @brief Gathers input depending on the descriptor configuration environment.
 //  * If interactive, it engages raw key interception mode.
 //  * Otherwise, it reads raw stream lines cleanly via get_next_line.
+//  *
+//  * This is for the 42_minishell_tester
 //  */
 // static char	*get_next_command(t_minishell *data)
 // {

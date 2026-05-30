@@ -36,14 +36,15 @@ void	write_prompt(void)
 		sig = ft_itoa(g_signal);
 		if (!sig)
 			write(1, "1", 1);
+		if (!sig)
+			write(1, "failed to malloc for sig in prompt\n", 35);
 		else
 		{
 			write(1, sig, ft_strlen(sig));
 			free(sig);
 		}
 		write(1, "] ", 2);
-		if (!sig)
-			write(1, "failed to malloc for sig in prompt ", 35);
+
 		write(1, "$> ", 3);
 	}
 	else
